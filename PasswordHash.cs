@@ -10,7 +10,7 @@ namespace PasswordHash
     /// www: http://crackstation.net/hashing-security.htm
     /// Compatibility: .NET 3.0 and later.
     /// </summary>
-    class PasswordHash
+    public class PasswordHash
     {
         // The following constants may be changed without breaking existing hashes.
         public const int SALT_BYTES = 24;
