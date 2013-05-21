@@ -3,7 +3,7 @@ require 'openssl'
 require 'base64'
 
 # Salted password hashing with PBKDF2-SHA1.
-# Authors: RedragonX (dicesoft.net), havoc AT defuse.ca 
+# Authors: @RedragonX (dicesoft.net), havoc AT defuse.ca 
 # www: http://crackstation.net/hashing-security.htm
 module PasswordHash
 
