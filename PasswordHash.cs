@@ -13,8 +13,8 @@ namespace PasswordHash
     public class PasswordHash
     {
         // The following constants may be changed without breaking existing hashes.
-        public const int SALT_BYTES = 24;
-        public const int HASH_BYTES = 24;
+        public const int SALT_BYTE_SIZE = 24;
+        public const int HASH_BYTE_SIZE = 24;
         public const int PBKDF2_ITERATIONS = 1000;
 
         public const int ITERATION_INDEX = 0;
@@ -30,11 +30,11 @@ namespace PasswordHash
         {
             // Generate a random salt
             RNGCryptoServiceProvider csprng = new RNGCryptoServiceProvider();
-            byte[] salt = new byte[SALT_BYTES];
+            byte[] salt = new byte[SALT_BYTE_SIZE];
             csprng.GetBytes(salt);
 
             // Hash the password and encode the parameters
-            byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTES);
+            byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
             return PBKDF2_ITERATIONS + ":" +
                 Convert.ToBase64String(salt) + ":" +
                 Convert.ToBase64String(hash);
@@ -44,13 +44,13 @@ namespace PasswordHash
         /// Validates a password given a hash of the correct one.
         /// </summary>
         /// <param name="password">The password to check.</param>
-        /// <param name="goodHash">A hash of the correct password.</param>
+        /// <param name="correctHash">A hash of the correct password.</param>
         /// <returns>True if the password is correct. False otherwise.</returns>
-        public static bool ValidatePassword(string password, string goodHash)
+        public static bool ValidatePassword(string password, string correctHash)
         {
             // Extract the parameters from the hash
             char[] delimiter = { ':' };
-            string[] split = goodHash.Split(delimiter);
+            string[] split = correctHash.Split(delimiter);
             int iterations = Int32.Parse(split[ITERATION_INDEX]);
             byte[] salt = Convert.FromBase64String(split[SALT_INDEX]);
             byte[] hash = Convert.FromBase64String(split[PBKDF2_INDEX]);

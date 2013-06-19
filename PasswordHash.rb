@@ -9,8 +9,8 @@ module PasswordHash
 
   # The following constants can be changed without breaking existing hashes.
   PBKDF2_ITERATIONS = 1000
-  SALT_BYTES = 24
-  HASH_BYTES = 24
+  SALT_BYTE_SIZE = 24
+  HASH_BYTE_SIZE = 24
 
   HASH_SECTIONS = 4
   SECTION_DELIMITER = ':'
@@ -20,20 +20,20 @@ module PasswordHash
 
   # Returns a salted PBKDF2 hash of the password.
   def self.createHash( password )
-    salt = SecureRandom.base64( SALT_BYTES )
+    salt = SecureRandom.base64( SALT_BYTE_SIZE )
     pbkdf2 = OpenSSL::PKCS5::pbkdf2_hmac_sha1( 
       password,
       salt,
       PBKDF2_ITERATIONS, 
-      HASH_BYTES
+      HASH_BYTE_SIZE
     )
     return ["sha1", PBKDF2_ITERATIONS, salt, Base64.encode64( pbkdf2 )].join( SECTION_DELIMITER )
   end
 
   # Checks if a password is correct given a hash of the correct one.
-  # goodHash must be a hash string generated with createHash.
-  def self.validatePassword( password, goodHash )
-    params = goodHash.split( SECTION_DELIMITER )
+  # correctHash must be a hash string generated with createHash.
+  def self.validatePassword( password, correctHash )
+    params = correctHash.split( SECTION_DELIMITER )
     return false if params.length != HASH_SECTIONS
 
     pbkdf2 = Base64.decode64( params[HASH_INDEX] )
