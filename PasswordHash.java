@@ -15,8 +15,8 @@ public class PasswordHash
     public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
 
     // The following constants may be changed without breaking existing hashes.
-    public static final int SALT_BYTES = 24;
-    public static final int HASH_BYTES = 24;
+    public static final int SALT_BYTE_SIZE = 24;
+    public static final int HASH_BYTE_SIZE = 24;
     public static final int PBKDF2_ITERATIONS = 1000;
 
     public static final int ITERATION_INDEX = 0;
@@ -46,11 +46,11 @@ public class PasswordHash
     {
         // Generate a random salt
         SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[SALT_BYTES];
+        byte[] salt = new byte[SALT_BYTE_SIZE];
         random.nextBytes(salt);
 
         // Hash the password
-        byte[] hash = pbkdf2(password, salt, PBKDF2_ITERATIONS, HASH_BYTES);
+        byte[] hash = pbkdf2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
         // format iterations:salt:hash
         return PBKDF2_ITERATIONS + ":" + toHex(salt) + ":" +  toHex(hash);
     }
@@ -58,28 +58,28 @@ public class PasswordHash
     /**
      * Validates a password using a hash.
      *
-     * @param   password    the password to check
-     * @param   goodHash    the hash of the valid password
-     * @return              true if the password is correct, false if not
+     * @param   password        the password to check
+     * @param   correctHash     the hash of the valid password
+     * @return                  true if the password is correct, false if not
      */
-    public static boolean validatePassword(String password, String goodHash)
+    public static boolean validatePassword(String password, String correctHash)
         throws NoSuchAlgorithmException, InvalidKeySpecException
     {
-        return validatePassword(password.toCharArray(), goodHash);
+        return validatePassword(password.toCharArray(), correctHash);
     }
 
     /**
      * Validates a password using a hash.
      *
-     * @param   password    the password to check
-     * @param   goodHash    the hash of the valid password
-     * @return              true if the password is correct, false if not
+     * @param   password        the password to check
+     * @param   correctHash     the hash of the valid password
+     * @return                  true if the password is correct, false if not
      */
-    public static boolean validatePassword(char[] password, String goodHash)
+    public static boolean validatePassword(char[] password, String correctHash)
         throws NoSuchAlgorithmException, InvalidKeySpecException
     {
         // Decode the hash into its parameters
-        String[] params = goodHash.split(":");
+        String[] params = correctHash.split(":");
         int iterations = Integer.parseInt(params[ITERATION_INDEX]);
         byte[] salt = fromHex(params[SALT_INDEX]);
         byte[] hash = fromHex(params[PBKDF2_INDEX]);
@@ -179,7 +179,7 @@ public class PasswordHash
                 String password = ""+i;
                 String hash = createHash(password);
                 String secondHash = createHash(password);
-                if(hash == secondHash) {
+                if(hash.equals(secondHash)) {
                     System.out.println("FAILURE: TWO HASHES ARE EQUAL!");
                     failure = true;
                 }
