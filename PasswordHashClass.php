@@ -109,6 +109,14 @@ class PasswordHash {
         if($count <= 0 || $key_length <= 0)
             die('PBKDF2 ERROR: Invalid parameters.');
 
+        if (function_exists("hash_pbkdf2")) {
+            // The output length is in NIBBLES (4-bits) if $raw_output is false!
+            if (!$raw_output) {
+                $key_length = $key_length * 2;
+            }
+            return hash_pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output);
+        }
+
         $hash_length = strlen(hash($algorithm, "", true));
         $block_count = ceil($key_length / $hash_length);
 
