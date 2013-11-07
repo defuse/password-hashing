@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 
@@ -20,7 +21,7 @@ namespace PasswordHash
         public const int ITERATION_INDEX = 0;
         public const int SALT_INDEX = 1;
         public const int PBKDF2_INDEX = 2;
-              
+
         /// <summary>
         /// Creates a salted PBKDF2 hash of the password.
         /// </summary>
@@ -33,9 +34,11 @@ namespace PasswordHash
             byte[] salt = new byte[SALT_BYTE_SIZE];
             csprng.GetBytes(salt);
 
+            int pbIterations = PasswordBasedIterations(password, PBKDF2_ITERATIONS);
+
             // Hash the password and encode the parameters
-            byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
-            return PBKDF2_ITERATIONS + ":" +
+            byte[] hash = PBKDF2(password, salt, pbIterations, HASH_BYTE_SIZE);
+            return PBKDF2_ITERATIONS + ":" + // Important: Only the base, not pbIterations should be returned;
                 Convert.ToBase64String(salt) + ":" +
                 Convert.ToBase64String(hash);
         }
@@ -55,7 +58,9 @@ namespace PasswordHash
             byte[] salt = Convert.FromBase64String(split[SALT_INDEX]);
             byte[] hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
 
-            byte[] testHash = PBKDF2(password, salt, iterations, hash.Length);
+            int pbIterations = PasswordBasedIterations(password, iterations);
+
+            byte[] testHash = PBKDF2(password, salt, pbIterations, hash.Length);
             return SlowEquals(hash, testHash);
         }
 
@@ -88,6 +93,35 @@ namespace PasswordHash
             Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, salt);
             pbkdf2.IterationCount = iterations;
             return pbkdf2.GetBytes(outputBytes);
+        }
+
+
+        /// <summary>
+        /// Computes a predictable adjustment to the base iteration count,
+        /// adjusts the result, and returns the outcome.  Used to make the literal password,
+        /// the only piece that can accurately calculate how many iterations are required.
+        /// </summary>
+        /// <param name="password">Non-hashed password</param>
+        /// <param name="password">Publicly known iterations</param>
+        /// <returns>Adjusted iteration count.</returns>
+        public static int PasswordBasedIterations(string password, int iterations)
+        {
+            var bytes = GetBytes(password);
+
+            // Adjustment mechanics can be changed per developer implementation.
+            // Addition is simple and scales with password length without creating an extensive burden for the normal hashing process.
+            var adjustment = bytes.Sum(b => (int)b);
+
+            var result = iterations + adjustment;
+
+            return result;
+        }
+
+        private static byte[] GetBytes(string str)
+        {
+            byte[] bytes = new byte[str.Length * sizeof(char)];
+            System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
+            return bytes;
         }
     }
 } 
