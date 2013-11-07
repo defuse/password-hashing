@@ -28,19 +28,52 @@
  */
 
 require_once('PasswordHash.php');
-$hash = create_hash("ubnhGM6IEHO6zxVzl");
+
+echo "Sample hash:\n";
+$hash = create_hash("test_password");
 echo $hash . "\n";
-die();
-$good = PasswordHash::validate_password("password", $hash);
-$bad =  PasswordHash::validate_password("wrong", $hash);
-if ($good) {
+
+echo "\nTest results:\n";
+
+// Test vector raw output.
+$a = bin2hex(pbkdf2("sha1", "password", "salt", 2, 20, true));
+$b = "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957";
+if ($a === $b) {
+    echo "pass\n";
+} else { 
+    echo "FAIL\n";
+}
+
+// Test vector hex output.
+$a = pbkdf2("sha1", "password", "salt", 2, 20, false);
+$b = "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957";
+if ($a === $b) {
+    echo "pass\n";
+} else { 
+    echo "FAIL\n";
+}
+
+$hash_of_password = create_hash("password");
+
+// Test correct password.
+if (validate_password("password", $hash_of_password)) {
     echo "pass\n";
 } else {
-    echo "fail\n";
+    echo "FAIL\n";
 }
-if (!$bad) {
+
+// Test wrong password.
+if (validate_password("wrong_password", $hash_of_password) === FALSE) {
     echo "pass\n";
 } else {
-    echo "fail\n";
+    echo "FAIL\n";
 }
+
+// Test bad hash.
+if (validate_password("password", "") === FALSE) {
+    echo "pass\n";
+} else {
+    echo "FAIL\n";
+}
+
 ?>
