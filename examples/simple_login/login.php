@@ -4,7 +4,7 @@ require_once "../../PasswordHashClass.php";
 $DB = new DB('sqlite::memory:'); // Replace with your own
 
 if (isset($_POST['username']) && isset($_POST['password'])) {
-	$result = $DB->pQuery("SELECT * FROM users WHERE username = ?", $_POST['username']);
+	$result = $DB->pQuery("SELECT * FROM user_accounts WHERE username = ?", $_POST['username']);
 	if (!empty($result)) {
 		$user =& $result[0];
 		if (PasswordHash::validate_password($_POST['password'], $user['password'])) {
