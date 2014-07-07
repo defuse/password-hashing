@@ -22,7 +22,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
 		<title>DEMO</title>
 	</head>
 	<body>
-		<h1>Sign Up!</h1>
+		<h1>Login</h1>
 		<?php if (isset($_SESSION['msg'])) {
 			echo "<p>" . htmlentities($_SESSION['msg'], ENT_QUOTES, 'UTF-8') . "</p>\n";
 			unset($_SESSION['msg']);
