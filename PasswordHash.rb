@@ -46,14 +46,14 @@ module PasswordHash
 
   # Returns a salted PBKDF2 hash of the password.
   def self.createHash( password )
-    salt = SecureRandom.base64( SALT_BYTE_SIZE )
+    salt = SecureRandom.random_bytes( SALT_BYTE_SIZE )
     pbkdf2 = OpenSSL::PKCS5::pbkdf2_hmac_sha1( 
       password,
       salt,
       PBKDF2_ITERATIONS, 
       HASH_BYTE_SIZE
     )
-    return ["sha1", PBKDF2_ITERATIONS, salt, Base64.encode64( pbkdf2 )].join( SECTION_DELIMITER )
+    return ["sha1", PBKDF2_ITERATIONS, Base64.encode64( salt ).strip, Base64.encode64( pbkdf2 ).strip].join( SECTION_DELIMITER )
   end
 
   # Checks if a password is correct given a hash of the correct one.
@@ -63,14 +63,25 @@ module PasswordHash
     return false if params.length != HASH_SECTIONS
 
     pbkdf2 = Base64.decode64( params[HASH_INDEX] )
+    salt = Base64.decode64( params[SALT_INDEX] )
+
     testHash = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
       password,
-      params[SALT_INDEX],
+      salt,
       params[ITERATIONS_INDEX].to_i,
       pbkdf2.length
     )
     
-    return pbkdf2 == testHash
+    return slow_equals(pbkdf2, testHash)
+  end
+
+  def self.slow_equals(a, b)
+    cmp = b.bytes.to_a
+    result = 0
+    a.bytes.each_with_index {|c,i|
+      result |= c ^ cmp[i]
+    }
+    result == 0
   end
 
   # Run tests to ensure the module is functioning properly.
@@ -115,3 +126,4 @@ module PasswordHash
 end
 
 PasswordHash.runSelfTests
+
