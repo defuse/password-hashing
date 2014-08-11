@@ -26,8 +26,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
     require_once('PasswordHash.php');
+
     $hash = create_hash("foobar");
     $result = validate_password("foobar", $hash);
     if ($result)
