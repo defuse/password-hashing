@@ -29,28 +29,30 @@
     require_once('PasswordHash.php');
 
     $hash = create_hash("foobar");
+
     $result = validate_password("foobar", $hash);
+    echo "Validating a good password...\n\n";
     if ($result)
     {
-        echo "Good";
+        echo "Validation 1 test passed\n\n";
     }
     else
     {
-        echo "Bad";
+        echo "Validation 1 test failed\n\n";
     }
 
     $result = validate_password("barfoo", $hash);
+    echo "Validating a bad password...\n\n";
     if ($result)
     {
-        echo "Bad";
+        echo "Validation 2 test failed";
     }
     else
     {
-        echo "Good";
+        echo "Validation 2 test passed";
     }
 
-    echo "\n";
-
-    echo $hash;
+    echo "\n"; 
+    echo $hash . "\n";
 
 ?>
