@@ -33,10 +33,35 @@ function test()
 {
     echo "Running PHP self tests...\n\n";
 
+    echo "Sample hash:\n";
+    $hash = PasswordHash::create_hash("test_password");
+    echo $hash . "\n";
+
+    echo "\nVector Raw Test results:\n";
+
+    // Test vector raw output.
+    $a = bin2hex(PasswordHash::pbkdf2("sha1", "password", "salt", 2, 20, true));
+    $b = "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957";
+    if ($a === $b) {
+        echo "Vector test 1 pass\n";
+    } else { 
+        echo "Vector test 1 FAIL\n";
+    }
+
+    // Test vector hex output.
+    $a = PasswordHash::pbkdf2("sha1", "password", "salt", 2, 20, false);
+    $b = "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957";
+    if ($a === $b) {
+        echo "Vector test 2 pass\n";
+    } else { 
+        echo "Vector test 2 FAIL\n";
+    }
+
     $hash = PasswordHash::create_hash("foobar");
+    echo "\n"; 
+    
 
     $result = PasswordHash::validate_password("foobar", $hash);
-    echo "Validating a good password...\n\n";
     if ($result)
     {
         echo "Validating correct password test passed\n\n";
@@ -48,7 +73,6 @@ function test()
     }
 
     $result = PasswordHash::validate_password("barfoo", $hash);
-    echo "Validating a bad password...\n\n";
     if ($result)
     {
         echo "Validating wrong password test FAILED";
@@ -59,10 +83,13 @@ function test()
         echo "Validation wrong password test passed";
     }
 
-    echo "\n"; 
-    echo $hash . "\n";
+    echo "\n\n"; 
+    
+    // Test bad hash.
+    if (PasswordHash::validate_password("password", "") === FALSE) {
+        echo "Hash test passed\n";
+    } else {
+        echo "Hash test FAILED\n";
+    }
 }
-
-# FIXME: Make sure all of the test cases in ../../tests/test.php are in here too.
-
 ?>

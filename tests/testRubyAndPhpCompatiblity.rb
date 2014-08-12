@@ -12,14 +12,26 @@ module TestRubyAndPhpCompatiblity
     puts 'Now validating this hash using a PHP implementation'
     result = system *%W(php tests/phpValidate.php #{userString} #{rubyHash})
     if !result
-      puts 'warning: validation failed for a Ruby hash in PHP implementation!!!'
-      # FIXME: Why is this a 'warning'?
-      # FIXME: If any of the tests fail, exit(1), if success, exit(0)
+      puts 'ERROR: validation failed for a Ruby hash in PHP implementation!!!'
+      exit(1)
+    else
+      puts 'SUCCESS: Hash validation passed '
     end
 
-    # FIXME: Test an incorrect password too!
+    # Test an incorrect password too
+    badPassword = "badpw" 
+    puts 'Now testing a bad password using a PHP implementation'
+    result = system *%W(php tests/phpValidate.php #{badPassword} #{rubyHash})
+    if !result
+      puts 'SUCCESS: The PHP implementation did not accept a bad password.'
+    else
+      puts 'ERROR: bad password test failed for a Ruby hash in PHP implementation!!!'
+      exit(1)
+    end
 
+    puts ''
     puts '----------------------------------------'
+    puts ''
   end
 
   def self.testPHPHash()
@@ -37,13 +49,24 @@ module TestRubyAndPhpCompatiblity
     puts ''
 
     if PasswordHash.validatePassword(testPw, testHash)
-      puts 'PHP hash validation passed!'
+      puts 'SUCCESS: PHP hash validation passed!'
     else
-      puts 'PHP hash validation failed!!!'
+      puts 'ERROR: PHP hash validation failed!!!'
+      exit(1)
     end
 
-    # FIXME: Test an incorrect password too!
+    puts ''
+    puts 'Now testing a bad password with a Ruby implementation...'
+    puts ''
+    
+    badPw = "baddd"
 
+    if !PasswordHash.validatePassword(badPw, testHash)
+      puts 'SUCCESS: The Ruby implementation did not accept a bad password.'
+    else
+      puts 'ERROR: bad password test failed for a Ruby hash in PHP implementation!!!'
+      exit(1)
+    end
   end
 end
 
