@@ -1,18 +1,7 @@
 require_relative '../PasswordHash.rb'
 
 module TestRubyAndPhpCompatiblity
-  def self.test
-    puts '----------------------------------------'
-    result = system *%W(php tests/test.php)
-    puts ''
-
-    if !result
-      puts 'warning: PHP script did not execute successfully!!!'
-      return false
-    end
-
-
-    puts '----------------------------------------'
+  def self.testRubyHash()
     puts 'Creating a hash using the Ruby implementation...'
 
     userString = "RedragonX!"
@@ -24,10 +13,13 @@ module TestRubyAndPhpCompatiblity
     result = system *%W(php tests/phpValidate.php #{userString} #{rubyHash})
     if !result
       puts 'warning: validation failed for a Ruby hash in PHP implementation!!!'
+      # FIXME: Why is this a 'warning'?
+      # FIXME: If any of the tests fail, exit(1), if success, exit(0)
     end
 
+    # FIXME: Test an incorrect password too!
+
     puts '----------------------------------------'
-    TestRubyAndPhpCompatiblity.testPHPHash()
   end
 
   def self.testPHPHash()
@@ -50,7 +42,10 @@ module TestRubyAndPhpCompatiblity
       puts 'PHP hash validation failed!!!'
     end
 
+    # FIXME: Test an incorrect password too!
+
   end
 end
 
-TestRubyAndPhpCompatiblity.test
+TestRubyAndPhpCompatiblity.testRubyHash()
+TestRubyAndPhpCompatiblity.testPHPHash()
