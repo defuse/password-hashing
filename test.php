@@ -76,4 +76,3 @@ if (PasswordHash::validate_password("password", "") === FALSE) {
     echo "FAIL\n";
 }
 
-?>

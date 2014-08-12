@@ -38,4 +38,3 @@ for ($i = 0; $i <= 24; $i++) {
     printf("%10d iterations: %f seconds\n", $iters, $seconds);
 }
 
-?>

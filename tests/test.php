@@ -65,4 +65,3 @@ function test()
 
 # FIXME: Make sure all of the test cases in ../../tests/test.php are in here too.
 
-?>
