@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 /* 
  * Password Hashing With PBKDF2 (http://crackstation.net/hashing-security.htm).
@@ -26,31 +27,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
+require_once '../PasswordHash.php';
 
-    require_once('PasswordHash.php');
-    $hash = create_hash("foobar");
-    $result = validate_password("foobar", $hash);
-    if ($result)
-    {
-        echo "Good";
-    }
-    else
-    {
-        echo "Bad";
-    }
-
-    $result = validate_password("barfoo", $hash);
-    if ($result)
-    {
-        echo "Bad";
-    }
-    else
-    {
-        echo "Good";
-    }
-
-    echo "\n";
-
-    echo $hash;
-
+    $testPassword = "DefuseDABomb!";
+    echo $testPassword . " " . create_hash($testPassword) . "\n";
 ?>
