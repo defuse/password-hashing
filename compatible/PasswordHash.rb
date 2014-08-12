@@ -125,4 +125,7 @@ module PasswordHash
 
 end
 
-PasswordHash.runSelfTests
+if __FILE__ == $0
+  PasswordHash.runSelfTests
+end
+
