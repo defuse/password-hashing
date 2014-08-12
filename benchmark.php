@@ -32,7 +32,7 @@ require_once('PasswordHash.php');
 for ($i = 0; $i <= 24; $i++) {
     $iters = (int)pow(2, $i);
     $start = microtime(true);
-    pbkdf2("sha256", "password".$i, "salt".$i, $iters, 16, true);
+    PasswordHash::pbkdf2("sha256", "password".$i, "salt".$i, $iters, 16, true);
     $end = microtime(true);
     $seconds = $end - $start;
     printf("%10d iterations: %f seconds\n", $iters, $seconds);
