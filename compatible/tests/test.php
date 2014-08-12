@@ -63,6 +63,6 @@ function test()
     echo $hash . "\n";
 }
 
-# TODO: Make sure all of the test cases in ../../tests/test.php are in here too.
+# FIXME: Make sure all of the test cases in ../../tests/test.php are in here too.
 
 ?>
