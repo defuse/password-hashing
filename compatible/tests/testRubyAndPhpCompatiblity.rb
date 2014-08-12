@@ -1,13 +1,13 @@
 require_relative '../PasswordHash.rb'
 
-module TestRubyAndPhpCompatiblity 
-  def self.test 
+module TestRubyAndPhpCompatiblity
+  def self.test
     puts '----------------------------------------'
     result = system *%W(php test.php)
-    puts '' 
+    puts ''
 
-    if !result  
-      puts 'warning: PHP script did not execute successfully!!!' 
+    if !result
+      puts 'warning: PHP script did not execute successfully!!!'
       return false
     end
 
@@ -18,7 +18,7 @@ module TestRubyAndPhpCompatiblity
     userString = "RedragonX!"
     rubyHash = PasswordHash.createHash( userString )
     puts rubyHash
-    
+
     puts ''
     puts 'Now validating this hash using a PHP implementation'
     result = system *%W(php tests/phpValidate.php #{userString} #{rubyHash})
@@ -37,7 +37,7 @@ module TestRubyAndPhpCompatiblity
 
     testData = `php phpHashMaker.php`
     testData = testData.split(' ')
-    
+
     testPw = testData[0]
     testHash = testData[1]
 
