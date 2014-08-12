@@ -3,7 +3,7 @@ require_relative '../PasswordHash.rb'
 module TestRubyAndPhpCompatiblity
   def self.test
     puts '----------------------------------------'
-    result = system *%W(php test.php)
+    result = system *%W(php tests/test.php)
     puts ''
 
     if !result
@@ -35,7 +35,7 @@ module TestRubyAndPhpCompatiblity
     puts 'Now testing a random PHP hash with a Ruby implementation...'
     puts ''
 
-    testData = `php phpHashMaker.php`
+    testData = `php tests/phpHashMaker.php`
     testData = testData.split(' ')
 
     testPw = testData[0]
