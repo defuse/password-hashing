@@ -53,7 +53,12 @@ module PasswordHash
       PBKDF2_ITERATIONS,
       HASH_BYTE_SIZE
     )
-    return ["sha1", PBKDF2_ITERATIONS, Base64.encode64( salt ).strip, Base64.encode64( pbkdf2 ).strip].join( SECTION_DELIMITER )
+   
+    parts = ["sha1", PBKDF2_ITERATIONS, 
+     Base64.strict_encode64( salt ),
+     Base64.strict_encode64( pbkdf2 )]
+
+    return parts.join( SECTION_DELIMITER )
   end
 
   # Checks if a password is correct given a hash of the correct one.
@@ -62,8 +67,8 @@ module PasswordHash
     params = correctHash.split( SECTION_DELIMITER )
     return false if params.length != HASH_SECTIONS
 
-    pbkdf2 = Base64.decode64( params[HASH_INDEX] )
-    salt = Base64.decode64( params[SALT_INDEX] )
+    pbkdf2 = Base64.strict_decode64( params[HASH_INDEX] )
+    salt = Base64.strict_decode64( params[SALT_INDEX] )
 
     testHash = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
       password,
