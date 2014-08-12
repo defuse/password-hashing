@@ -19,7 +19,7 @@ module TestRubyAndPhpCompatiblity
     end
 
     # Test an incorrect password too
-    badPassword = "badpw" 
+    badPassword = "badpw"
     puts 'Now testing a bad password using a PHP implementation'
     result = system *%W(php tests/phpValidate.php #{badPassword} #{rubyHash})
     if !result
@@ -58,7 +58,7 @@ module TestRubyAndPhpCompatiblity
     puts ''
     puts 'Now testing a bad password with a Ruby implementation...'
     puts ''
-    
+
     badPw = "baddd"
 
     if !PasswordHash.validatePassword(badPw, testHash)
