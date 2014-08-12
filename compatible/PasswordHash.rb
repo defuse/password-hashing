@@ -47,10 +47,10 @@ module PasswordHash
   # Returns a salted PBKDF2 hash of the password.
   def self.createHash( password )
     salt = SecureRandom.random_bytes( SALT_BYTE_SIZE )
-    pbkdf2 = OpenSSL::PKCS5::pbkdf2_hmac_sha1( 
+    pbkdf2 = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
       password,
       salt,
-      PBKDF2_ITERATIONS, 
+      PBKDF2_ITERATIONS,
       HASH_BYTE_SIZE
     )
     return ["sha1", PBKDF2_ITERATIONS, Base64.encode64( salt ).strip, Base64.encode64( pbkdf2 ).strip].join( SECTION_DELIMITER )
@@ -71,7 +71,7 @@ module PasswordHash
       params[ITERATIONS_INDEX].to_i,
       pbkdf2.length
     )
-    
+
     return slow_equals(pbkdf2, testHash)
   end
 
@@ -90,7 +90,7 @@ module PasswordHash
     puts "Sample hashes:"
     3.times { puts createHash("password") }
 
-    puts "\nRunning Ruby self tests..." 
+    puts "\nRunning Ruby self tests..."
     @@allPass = true
 
     correctPassword = 'aaaaaaaaaa'
@@ -98,13 +98,13 @@ module PasswordHash
     hash = createHash(correctPassword)
 
     assert( validatePassword( correctPassword, hash ) == true, "correct password" )
-    assert( validatePassword( wrongPassword, hash ) == false, "wrong password" ) 
+    assert( validatePassword( wrongPassword, hash ) == false, "wrong password" )
 
     h1 = hash.split( SECTION_DELIMITER )
     h2 = createHash( correctPassword ).split( SECTION_DELIMITER )
     assert( h1[HASH_INDEX] != h2[HASH_INDEX], "different hashes" )
     assert( h1[SALT_INDEX] != h2[SALT_INDEX], "different salt" )
-     
+
     if @@allPass
       puts "*** ALL TESTS PASS ***"
     else
