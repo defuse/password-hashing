@@ -40,7 +40,7 @@ This is a command line PHP script with one option.
   <password> must be a string of a password.
   <hash> must be a PBKDF2 hash.
 
-<?php
+<?
     exit(1);
 } else {
     validateTestHash($argv[1], $argv[2]);
