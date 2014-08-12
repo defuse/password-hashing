@@ -90,7 +90,7 @@ module PasswordHash
     puts "Sample hashes:"
     3.times { puts createHash("password") }
 
-    puts "\nRunning self tests..." 
+    puts "\nRunning Ruby self tests..." 
     @@allPass = true
 
     correctPassword = 'aaaaaaaaaa'

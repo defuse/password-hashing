@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 /* 
  * Password Hashing With PBKDF2 (http://crackstation.net/hashing-security.htm).
@@ -26,42 +27,35 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
-require_once('../PasswordHash.php');
-test();
+require_once '../PasswordHash.php';
 
-function test()
+if ($argc != 3 || in_array($argv[1], array('--help', '-help', '-h', '-?'))) {
+?>
+
+This is a command line PHP script with one option.
+
+  Usage:
+  <?php echo $argv[0]; ?> <password> <hash>
+
+  <password> must be a string of a password.
+  <hash> must be a PBKDF2 hash.
+
+<?php
+    exit(1);
+} else {
+    validateTestHash($argv[1], $argv[2]);
+}
+
+function validateTestHash( $password, $hash )
 {
+    $testResult = validate_password( $password, $hash );
 
-    echo "Running self PHP tests...\n\n";
-
-    $hash = create_hash("foobar");
-
-    $result = validate_password("foobar", $hash);
-    echo "Validating a good password...\n\n";
-    if ($result)
-    {
-        echo "Validation 1 test passed\n\n";
+    if ($testResult) {
+        echo "Validation passed!\n\n";
+        exit(0);
     }
-    else
-    {
-        echo "Validation 1 test failed\n\n";
-        exit(1);
-    }
-
-    $result = validate_password("barfoo", $hash);
-    echo "Validating a bad password...\n\n";
-    if ($result)
-    {
-        echo "Validation 2 test failed";
-        exit(1);
-    }
-    else
-    {
-        echo "Validation 2 test passed";
-    }
-
-    echo "\n"; 
-    echo $hash . "\n";
+    echo "Validation failed!\n\n";
+    exit(1);
 }
 
 ?>
