@@ -23,7 +23,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
- 
+
 require 'securerandom'
 require 'openssl'
 require 'base64'
@@ -46,14 +46,14 @@ module PasswordHash
 
   # Returns a salted PBKDF2 hash of the password.
   def self.createHash( password )
-    salt = SecureRandom.base64( SALT_BYTE_SIZE )
-    pbkdf2 = OpenSSL::PKCS5::pbkdf2_hmac_sha1( 
+    salt = SecureRandom.random_bytes( SALT_BYTE_SIZE )
+    pbkdf2 = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
       password,
       salt,
-      PBKDF2_ITERATIONS, 
+      PBKDF2_ITERATIONS,
       HASH_BYTE_SIZE
     )
-    return ["sha1", PBKDF2_ITERATIONS, salt, Base64.encode64( pbkdf2 )].join( SECTION_DELIMITER )
+    return ["sha1", PBKDF2_ITERATIONS, Base64.encode64( salt ).strip, Base64.encode64( pbkdf2 ).strip].join( SECTION_DELIMITER )
   end
 
   # Checks if a password is correct given a hash of the correct one.
@@ -63,14 +63,25 @@ module PasswordHash
     return false if params.length != HASH_SECTIONS
 
     pbkdf2 = Base64.decode64( params[HASH_INDEX] )
+    salt = Base64.decode64( params[SALT_INDEX] )
+
     testHash = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
       password,
-      params[SALT_INDEX],
+      salt,
       params[ITERATIONS_INDEX].to_i,
       pbkdf2.length
     )
-    
-    return pbkdf2 == testHash
+
+    return slow_equals(pbkdf2, testHash)
+  end
+
+  def self.slow_equals(a, b)
+    cmp = b.bytes.to_a
+    result = 0
+    a.bytes.each_with_index {|c,i|
+      result |= c ^ cmp[i]
+    }
+    result == 0
   end
 
   # Run tests to ensure the module is functioning properly.
@@ -79,7 +90,7 @@ module PasswordHash
     puts "Sample hashes:"
     3.times { puts createHash("password") }
 
-    puts "\nRunning self tests..." 
+    puts "\nRunning Ruby self tests..."
     @@allPass = true
 
     correctPassword = 'aaaaaaaaaa'
@@ -87,13 +98,13 @@ module PasswordHash
     hash = createHash(correctPassword)
 
     assert( validatePassword( correctPassword, hash ) == true, "correct password" )
-    assert( validatePassword( wrongPassword, hash ) == false, "wrong password" ) 
+    assert( validatePassword( wrongPassword, hash ) == false, "wrong password" )
 
     h1 = hash.split( SECTION_DELIMITER )
     h2 = createHash( correctPassword ).split( SECTION_DELIMITER )
     assert( h1[HASH_INDEX] != h2[HASH_INDEX], "different hashes" )
     assert( h1[SALT_INDEX] != h2[SALT_INDEX], "different salt" )
-     
+
     if @@allPass
       puts "*** ALL TESTS PASS ***"
     else
@@ -114,4 +125,7 @@ module PasswordHash
 
 end
 
-PasswordHash.runSelfTests
+if __FILE__ == $0
+  PasswordHash.runSelfTests
+end
+

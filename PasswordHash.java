@@ -32,6 +32,7 @@ import javax.crypto.SecretKeyFactory;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import javax.xml.bind.DatatypeConverter;
 
 /*
  * PBKDF2 salted password hashing.
@@ -47,9 +48,9 @@ public class PasswordHash
     public static final int HASH_BYTE_SIZE = 24;
     public static final int PBKDF2_ITERATIONS = 1000;
 
-    public static final int ITERATION_INDEX = 0;
-    public static final int SALT_INDEX = 1;
-    public static final int PBKDF2_INDEX = 2;
+    public static final int ITERATION_INDEX = 1;
+    public static final int SALT_INDEX = 2;
+    public static final int PBKDF2_INDEX = 3;
 
     /**
      * Returns a salted PBKDF2 hash of the password.
@@ -80,7 +81,7 @@ public class PasswordHash
         // Hash the password
         byte[] hash = pbkdf2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
         // format iterations:salt:hash
-        return PBKDF2_ITERATIONS + ":" + toHex(salt) + ":" +  toHex(hash);
+        return "sha1:" + PBKDF2_ITERATIONS + ":" + toBase64(salt) + ":" +  toBase64(hash);
     }
 
     /**
@@ -109,8 +110,8 @@ public class PasswordHash
         // Decode the hash into its parameters
         String[] params = correctHash.split(":");
         int iterations = Integer.parseInt(params[ITERATION_INDEX]);
-        byte[] salt = fromHex(params[SALT_INDEX]);
-        byte[] hash = fromHex(params[PBKDF2_INDEX]);
+        byte[] salt = fromBase64(params[SALT_INDEX]);
+        byte[] hash = fromBase64(params[PBKDF2_INDEX]);
         // Compute the hash of the provided password, using the same salt, 
         // iteration count, and hash length
         byte[] testHash = pbkdf2(password, salt, iterations, hash.length);
@@ -159,14 +160,9 @@ public class PasswordHash
      * @param   hex         the hex string
      * @return              the hex string decoded into a byte array
      */
-    private static byte[] fromHex(String hex)
+    private static byte[] fromBase64(String hex)
     {
-        byte[] binary = new byte[hex.length() / 2];
-        for(int i = 0; i < binary.length; i++)
-        {
-            binary[i] = (byte)Integer.parseInt(hex.substring(2*i, 2*i+2), 16);
-        }
-        return binary;
+        return DatatypeConverter.parseBase64Binary(hex);
     }
 
     /**
@@ -175,15 +171,9 @@ public class PasswordHash
      * @param   array       the byte array to convert
      * @return              a length*2 character string encoding the byte array
      */
-    private static String toHex(byte[] array)
+    private static String toBase64(byte[] array)
     {
-        BigInteger bi = new BigInteger(1, array);
-        String hex = bi.toString(16);
-        int paddingLength = (array.length * 2) - hex.length();
-        if(paddingLength > 0) 
-            return String.format("%0" + paddingLength + "d", 0) + hex;
-        else
-            return hex;
+        return DatatypeConverter.printBase64Binary(array);
     }
 
     /**

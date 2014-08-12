@@ -38,17 +38,55 @@ namespace PasswordHash
     /// www: http://crackstation.net/hashing-security.htm
     /// Compatibility: .NET 3.0 and later.
     /// </summary>
-    public class PasswordHash
+    class PasswordHash
     {
         // The following constants may be changed without breaking existing hashes.
-        public const int SALT_BYTE_SIZE = 24;
-        public const int HASH_BYTE_SIZE = 24;
+        public const int SALT_BYTES = 24;
+        public const int HASH_BYTES = 24;
         public const int PBKDF2_ITERATIONS = 1000;
 
-        public const int ITERATION_INDEX = 0;
-        public const int SALT_INDEX = 1;
-        public const int PBKDF2_INDEX = 2;
-              
+        public const int ITERATION_INDEX = 1;
+        public const int SALT_INDEX = 2;
+        public const int PBKDF2_INDEX = 3;
+
+        public static void Main(string[] args)
+        {
+            // Print out 10 hashes
+            for(int i = 0; i < 10; i++) {
+                Console.WriteLine(PasswordHash.CreateHash("p\r\nassw0Rd!"));
+            }
+
+            // Test password validation
+            bool failure = false;
+            Console.WriteLine("Running tests...");
+            for(int i = 0; i < 100; i++)
+            {
+                string password = "" + i;
+                string hash = CreateHash(password);
+                string secondHash = CreateHash(password);
+                if(hash == secondHash) {
+                    Console.WriteLine("FAILURE: TWO HASHES ARE EQUAL!");
+                    failure = true;
+                }
+                String wrongPassword = ""+(i+1);
+                if(ValidatePassword(wrongPassword, hash)) {
+                    Console.WriteLine("FAILURE: WRONG PASSWORD ACCEPTED!");
+                    failure = true;
+                }
+                if(!ValidatePassword(password, hash)) {
+                    Console.WriteLine("FAILURE: GOOD PASSWORD NOT ACCEPTED!");
+                    failure = true;
+                }
+            }
+            if(failure) {
+                Console.WriteLine("TESTS FAILED!");
+            }
+            else {
+                Console.WriteLine("TESTS PASSED!");
+            }
+
+        }
+
         /// <summary>
         /// Creates a salted PBKDF2 hash of the password.
         /// </summary>
@@ -58,12 +96,12 @@ namespace PasswordHash
         {
             // Generate a random salt
             RNGCryptoServiceProvider csprng = new RNGCryptoServiceProvider();
-            byte[] salt = new byte[SALT_BYTE_SIZE];
+            byte[] salt = new byte[SALT_BYTES];
             csprng.GetBytes(salt);
 
             // Hash the password and encode the parameters
-            byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
-            return PBKDF2_ITERATIONS + ":" +
+            byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTES);
+            return "sha1:" + PBKDF2_ITERATIONS + ":" +
                 Convert.ToBase64String(salt) + ":" +
                 Convert.ToBase64String(hash);
         }
@@ -72,13 +110,13 @@ namespace PasswordHash
         /// Validates a password given a hash of the correct one.
         /// </summary>
         /// <param name="password">The password to check.</param>
-        /// <param name="correctHash">A hash of the correct password.</param>
+        /// <param name="goodHash">A hash of the correct password.</param>
         /// <returns>True if the password is correct. False otherwise.</returns>
-        public static bool ValidatePassword(string password, string correctHash)
+        public static bool ValidatePassword(string password, string goodHash)
         {
             // Extract the parameters from the hash
             char[] delimiter = { ':' };
-            string[] split = correctHash.Split(delimiter);
+            string[] split = goodHash.Split(delimiter);
             int iterations = Int32.Parse(split[ITERATION_INDEX]);
             byte[] salt = Convert.FromBase64String(split[SALT_INDEX]);
             byte[] hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
@@ -118,4 +156,5 @@ namespace PasswordHash
             return pbkdf2.GetBytes(outputBytes);
         }
     }
-} 
+}
+
