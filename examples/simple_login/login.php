@@ -1,7 +1,8 @@
 <?php
 session_start();
-require_once "../../PasswordHashClass.php";
-$DB = new DB('sqlite::memory:'); // Replace with your own
+require_once 'DB.php';
+require_once "../../PasswordHash.php";
+$DB = new DB('sqlite:useraccount-example.php');
 
 if (isset($_POST['username']) && isset($_POST['password'])) {
     $result = $DB->pQuery("SELECT * FROM user_accounts WHERE username = ?", $_POST['username']);
