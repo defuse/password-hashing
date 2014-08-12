@@ -39,11 +39,11 @@ function test()
     echo "Validating a good password...\n\n";
     if ($result)
     {
-        echo "Validation 1 test passed\n\n";
+        echo "Validating correct password test passed\n\n";
     }
     else
     {
-        echo "Validation 1 test failed\n\n";
+        echo "Validating correct password test FAILED\n\n";
         exit(1);
     }
 
@@ -51,16 +51,18 @@ function test()
     echo "Validating a bad password...\n\n";
     if ($result)
     {
-        echo "Validation 2 test failed";
+        echo "Validating wrong password test FAILED";
         exit(1);
     }
     else
     {
-        echo "Validation 2 test passed";
+        echo "Validation wrong password test passed";
     }
 
     echo "\n"; 
     echo $hash . "\n";
 }
+
+# TODO: Make sure all of the test cases in ../../tests/test.php are in here too.
 
 ?>
