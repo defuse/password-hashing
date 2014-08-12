@@ -33,9 +33,9 @@ function test()
 {
     echo "Running PHP self tests...\n\n";
 
-    $hash = create_hash("foobar");
+    $hash = PasswordHash::create_hash("foobar");
 
-    $result = validate_password("foobar", $hash);
+    $result = PasswordHash::validate_password("foobar", $hash);
     echo "Validating a good password...\n\n";
     if ($result)
     {
@@ -47,7 +47,7 @@ function test()
         exit(1);
     }
 
-    $result = validate_password("barfoo", $hash);
+    $result = PasswordHash::validate_password("barfoo", $hash);
     echo "Validating a bad password...\n\n";
     if ($result)
     {

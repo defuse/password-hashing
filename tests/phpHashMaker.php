@@ -30,5 +30,5 @@
 require_once 'PasswordHash.php';
 
     $testPassword = "DefuseDABomb!";
-    echo $testPassword . " " . create_hash($testPassword) . "\n";
+    echo $testPassword . " " . PasswordHash::create_hash($testPassword) . "\n";
 ?>

@@ -48,7 +48,7 @@ This is a command line PHP script with one option.
 
 function validateTestHash( $password, $hash )
 {
-    $testResult = validate_password( $password, $hash );
+    $testResult = PasswordHash::validate_password( $password, $hash );
 
     if ($testResult) {
         echo "Validation passed!\n\n";
