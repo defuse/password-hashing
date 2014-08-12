@@ -27,69 +27,77 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 require_once('PasswordHash.php');
-test();
+
+if (test()) {
+    exit(0);
+} else {
+    exit(1);
+}
+
 
 function test()
 {
-    echo "Running PHP self tests...\n\n";
+    $all_tests_pass = true;
 
     echo "Sample hash:\n";
     $hash = PasswordHash::create_hash("test_password");
-    echo $hash . "\n";
-
-    echo "\nVector Raw Test results:\n";
+    echo $hash . "\n\n";
 
     // Test vector raw output.
     $a = bin2hex(PasswordHash::pbkdf2("sha1", "password", "salt", 2, 20, true));
     $b = "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957";
     if ($a === $b) {
-        echo "Vector test 1 pass\n";
+        echo "Test vector 1: pass\n";
     } else { 
-        echo "Vector test 1 FAIL\n";
+        echo "Test vector 1: FAIL\n";
+        $all_tests_pass = false;
     }
 
     // Test vector hex output.
     $a = PasswordHash::pbkdf2("sha1", "password", "salt", 2, 20, false);
     $b = "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957";
     if ($a === $b) {
-        echo "Vector test 2 pass\n";
+        echo "Test vector 2: pass\n";
     } else { 
-        echo "Vector test 2 FAIL\n";
+        echo "Test vector 2: FAIL\n";
+        $all_tests_pass = false;
     }
 
-    $hash = PasswordHash::create_hash("foobar");
-    echo "\n"; 
-    
+    $hash = PasswordHash::create_hash("correct_password");
 
-    $result = PasswordHash::validate_password("foobar", $hash);
-    if ($result)
+    // Right password returns true.
+    $result = PasswordHash::validate_password("correct_password", $hash);
+    if ($result === TRUE)
     {
-        echo "Validating correct password test passed\n\n";
+        echo "Correct password: pass\n";
     }
     else
     {
-        echo "Validating correct password test FAILED\n\n";
-        exit(1);
+        echo "Correct password: FAIL\n";
+        $all_tests_pass = false;
     }
 
-    $result = PasswordHash::validate_password("barfoo", $hash);
-    if ($result)
+    // Wrong password returns false.
+    $result = PasswordHash::validate_password("wrong_password", $hash);
+    if ($result === FALSE)
     {
-        echo "Validating wrong password test FAILED";
-        exit(1);
+        echo "Wrong password: pass\n";
     }
     else
     {
-        echo "Validation wrong password test passed";
+        echo "Wrong password: FAIL\n";
+        $all_tests_pass = false;
     }
-
-    echo "\n\n"; 
     
-    // Test bad hash.
-    if (PasswordHash::validate_password("password", "") === FALSE) {
-        echo "Hash test passed\n";
+    // Bad hash return FALSE.
+    $result = PasswordHash::validate_password("password", "");
+    if ($result === FALSE) {
+        echo "Bad hash: pass\n";
     } else {
-        echo "Hash test FAILED\n";
+        echo "Bad hash: FAIL\n";
+        $all_tests_pass = false;
     }
+
+    return $all_tests_pass;
 }
 ?>
