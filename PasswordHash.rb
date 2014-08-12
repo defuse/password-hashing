@@ -54,9 +54,12 @@ module PasswordHash
       HASH_BYTE_SIZE
     )
    
-    parts = ["sha1", PBKDF2_ITERATIONS, 
+    parts = [
+     "sha1",
+     PBKDF2_ITERATIONS, 
      Base64.strict_encode64( salt ),
-     Base64.strict_encode64( pbkdf2 )]
+     Base64.strict_encode64( pbkdf2 ) 
+    ]
 
     return parts.join( SECTION_DELIMITER )
   end
