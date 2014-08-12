@@ -31,8 +31,7 @@ test();
 
 function test()
 {
-
-    echo "Running self PHP tests...\n\n";
+    echo "Running PHP self tests...\n\n";
 
     $hash = create_hash("foobar");
 
