@@ -21,7 +21,7 @@ module TestRubyAndPhpCompatiblity
     
     puts ''
     puts 'Now validating this hash using a PHP implementation'
-    result = system *%W(php phpValidate.php #{userString} #{rubyHash})
+    result = system *%W(php tests/phpValidate.php #{userString} #{rubyHash})
     if !result
       puts 'warning: validation failed for a Ruby hash in PHP implementation!!!'
     end
