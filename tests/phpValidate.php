@@ -29,17 +29,7 @@
 require_once 'PasswordHash.php';
 
 if ($argc != 3 || in_array($argv[1], array('--help', '-help', '-h', '-?'))) {
-?>
-
-This is a command line PHP script with one option.
-
-  Usage:
-  <?php echo $argv[0]; ?> <password> <hash>
-
-  <password> must be a string of a password.
-  <hash> must be a PBKDF2 hash.
-
-<?
+    echo "Usage: php $argv[0] <password> <hash>\n";
     exit(1);
 } else {
     validateTestHash($argv[1], $argv[2]);
