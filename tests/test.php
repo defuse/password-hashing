@@ -98,6 +98,22 @@ function test()
         $all_tests_pass = false;
     }
 
+    // initialization of the badHash length is the original hash length.
+    $badHashLength = strlen($hash);
+
+    do {
+        $badHash = substr($hash, 0, $badHashLength - 1);
+        $badHashLength = strlen($badHash);
+        $badResult = PasswordHash::validate_password("correct_password", $badHash);
+
+        if (!$badResult === false) {
+            echo "Truncated hash test: FAIL " . 
+                "(At hash length of " .  $badHashLength .") \n";
+
+            $all_tests_pass = false;
+            return;
+        } 
+    } while ($badHash[$badHashLength - 3] != ':');
+
     return $all_tests_pass;
 }
-
