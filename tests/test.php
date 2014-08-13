@@ -112,7 +112,10 @@ function test()
 
             $all_tests_pass = false;
             return;
-        } 
+        } else {
+            echo "Truncated hash: pass\n";
+            return;
+        }
     } while ($badHash[$badHashLength - 3] != ':');
 
     return $all_tests_pass;
