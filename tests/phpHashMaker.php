@@ -28,6 +28,7 @@
  */
 require_once 'PasswordHash.php';
 
+    echo "PHP VERSION: " . phpversion() . "\n";
     $testPassword = "DefuseDABomb!";
     echo $testPassword . " " . PasswordHash::create_hash($testPassword) . "\n";
 
