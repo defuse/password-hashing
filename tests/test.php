@@ -107,7 +107,7 @@ function test()
         $badHash = substr($hash, 0, $badHashLength);
         $badResult = PasswordHash::validate_password("correct_password", $badHash);
 
-        if (!$badResult === false) {
+        if ($badResult !== false) {
             echo "Truncated hash test: FAIL " . 
                 "(At hash length of " .  $badHashLength .") \n";
 
