@@ -27,7 +27,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-echo "PHP VERSION: " . phpversion() . "\n";
+require_once 'PasswordHash.php';
+
+$err = fopen('php://stderr', 'w');
+fwrite($err, "PHP VERSION: " . phpversion() . "\n");
 
 if ($argc != 3 || in_array($argv[1], array('--help', '-help', '-h', '-?'))) {
     echo "Usage: php $argv[0] <password> <hash>\n";
