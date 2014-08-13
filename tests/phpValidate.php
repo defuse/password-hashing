@@ -58,3 +58,4 @@ function validateTestHash( $password, $hash )
     exit(1);
 }
 
+?>
