@@ -70,5 +70,5 @@ module TestRubyAndPhpCompatiblity
   end
 end
 
-TestRubyAndPhpCompatiblity.testRubyHash()
 TestRubyAndPhpCompatiblity.testPHPHash()
+TestRubyAndPhpCompatiblity.testRubyHash()
