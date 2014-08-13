@@ -1,4 +1,3 @@
-#!/usr/bin/php
 <?php
 /* 
  * Password Hashing With PBKDF2 (http://crackstation.net/hashing-security.htm).
