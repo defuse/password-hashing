@@ -115,7 +115,7 @@ function test()
             $all_tests_pass = false;
             break;
         } 
-        // The loop goes on until it is two characters away from the first : it
+        // The loop goes on until it is two characters away from the last : it
         // finds. This is because the PBKDF2 function requires a hash that's at
         // least 2 characters long. This will be changed once exceptions are
         // implemented.

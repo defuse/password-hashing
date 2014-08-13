@@ -74,9 +74,9 @@ class PasswordHash {
            return false;
         $pbkdf2 = base64_decode($params[HASH_PBKDF2_INDEX]);
 
-        $storedHashSize = $params[HASH_SIZE_INDEX];
+        $storedHashSize = (int)$params[HASH_SIZE_INDEX];
 
-        if (strlen($pbkdf2) != $storedHashSize) {
+        if (strlen($pbkdf2) !== $storedHashSize) {
             return false;
         }
  
