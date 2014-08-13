@@ -98,9 +98,9 @@ function test()
         $all_tests_pass = false;
     }
 
-    // The following test will tell you if the hash validation improperly
-    // accepts a trancuted hash.
+    // Make sure truncated hashes don't validate.
     $badHashLength = strlen($hash);
+    $truncateTest = true;
 
     do {
         $badHashLength -= 1;
@@ -109,8 +109,9 @@ function test()
 
         if ($badResult !== false) {
             echo "Truncated hash test: FAIL " . 
-                "(At hash length of " .  $badHashLength .") \n";
+                "(At hash length of " . $badHashLength . ") \n";
 
+            $truncateTest = false;
             $all_tests_pass = false;
             break;
         } 
@@ -119,7 +120,10 @@ function test()
         // least 2 characters long. This will be changed once exceptions are
         // implemented.
     } while ($badHash[$badHashLength - 3] != ':');
-    echo "Truncated hash: pass\n";
+    
+    if($truncateTest) {
+        echo "Truncated hash: pass\n";
+    }
 
     return $all_tests_pass;
 }
