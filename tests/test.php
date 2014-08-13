@@ -98,12 +98,13 @@ function test()
         $all_tests_pass = false;
     }
 
-    // initialization of the badHash length is the original hash length.
+    // The following test will tell you if the hash validation improperly
+    // accepts a trancuted hash.
     $badHashLength = strlen($hash);
 
     do {
-        $badHash = substr($hash, 0, $badHashLength - 1);
-        $badHashLength = strlen($badHash);
+        $badHashLength -= 1;
+        $badHash = substr($hash, 0, $badHashLength);
         $badResult = PasswordHash::validate_password("correct_password", $badHash);
 
         if (!$badResult === false) {
@@ -111,12 +112,14 @@ function test()
                 "(At hash length of " .  $badHashLength .") \n";
 
             $all_tests_pass = false;
-            return;
-        } else {
-            echo "Truncated hash: pass\n";
-            return;
-        }
+            break;
+        } 
+        // The loop goes on until it is two characters away from the first : it
+        // finds. This is because the PBKDF2 function requires a hash that's at
+        // least 2 characters long. This will be changed once exceptions are
+        // implemented.
     } while ($badHash[$badHashLength - 3] != ':');
+    echo "Truncated hash: pass\n";
 
     return $all_tests_pass;
 }
