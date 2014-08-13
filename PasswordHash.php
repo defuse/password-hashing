@@ -33,27 +33,38 @@ define("PBKDF2_ITERATIONS", 1000);
 define("PBKDF2_SALT_BYTES", 24);
 define("PBKDF2_HASH_BYTES", 24);
 
-define("HASH_SECTIONS", 4);
+define("HASH_SECTIONS", 5);
 define("HASH_ALGORITHM_INDEX", 0);
 define("HASH_ITERATION_INDEX", 1);
-define("HASH_SALT_INDEX", 2);
-define("HASH_PBKDF2_INDEX", 3);
+define("HASH_SIZE_INDEX", 2);
+define("HASH_SALT_INDEX", 3);
+define("HASH_PBKDF2_INDEX", 4);
 
 class PasswordHash {
 
     public static function create_hash($password)
     {
-        // format: algorithm:iterations:salt:hash
+        // format: algorithm:iterations:hashSize:salt:hash
         $salt = base64_encode(mcrypt_create_iv(PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM));
-        return PBKDF2_HASH_ALGORITHM . ":" . PBKDF2_ITERATIONS . ":" .  $salt . ":" .
-            base64_encode(self::pbkdf2(
-                PBKDF2_HASH_ALGORITHM,
-                $password,
-                base64_decode($salt),
-                PBKDF2_ITERATIONS,
-                PBKDF2_HASH_BYTES,
-                true
-            ));
+        $PBKDF2_Output = self::pbkdf2(
+            PBKDF2_HASH_ALGORITHM,
+            $password,
+            base64_decode($salt),
+            PBKDF2_ITERATIONS,
+            PBKDF2_HASH_BYTES,
+            true
+        );
+
+        $hashSize = strlen($PBKDF2_Output);
+        return PBKDF2_HASH_ALGORITHM . 
+            ":" .
+            PBKDF2_ITERATIONS . 
+            ":" .
+            $hashSize . 
+            ":" .
+            $salt . 
+            ":" .
+            base64_encode($PBKDF2_Output);
     }
     
     public static function validate_password($password, $good_hash)
@@ -62,6 +73,13 @@ class PasswordHash {
         if(count($params) < HASH_SECTIONS)
            return false;
         $pbkdf2 = base64_decode($params[HASH_PBKDF2_INDEX]);
+
+        $storedHashSize = (int)$params[HASH_SIZE_INDEX];
+
+        if (strlen($pbkdf2) !== $storedHashSize) {
+            return false;
+        }
+ 
         return self::slow_equals(
             $pbkdf2,
             self::pbkdf2(

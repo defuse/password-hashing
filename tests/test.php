@@ -98,6 +98,32 @@ function test()
         $all_tests_pass = false;
     }
 
+    // Make sure truncated hashes don't validate.
+    $badHashLength = strlen($hash);
+    $truncateTest = true;
+
+    do {
+        $badHashLength -= 1;
+        $badHash = substr($hash, 0, $badHashLength);
+        $badResult = PasswordHash::validate_password("correct_password", $badHash);
+
+        if ($badResult !== false) {
+            echo "Truncated hash test: FAIL " . 
+                "(At hash length of " . $badHashLength . ") \n";
+
+            $truncateTest = false;
+            $all_tests_pass = false;
+            break;
+        } 
+        // The loop goes on until it is two characters away from the last : it
+        // finds. This is because the PBKDF2 function requires a hash that's at
+        // least 2 characters long. This will be changed once exceptions are
+        // implemented.
+    } while ($badHash[$badHashLength - 3] != ':');
+    
+    if($truncateTest) {
+        echo "Truncated hash: pass\n";
+    }
+
     return $all_tests_pass;
 }
-
