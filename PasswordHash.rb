@@ -38,13 +38,15 @@ module PasswordHash
   SALT_BYTE_SIZE = 24
   HASH_BYTE_SIZE = 24
 
-  HASH_SECTIONS = 4
+  HASH_SECTIONS = 5
   SECTION_DELIMITER = ':'
   ITERATIONS_INDEX = 1
-  SALT_INDEX = 2
-  HASH_INDEX = 3
+  HASH_SIZE_INDEX = 2
+  SALT_INDEX = 3
+  HASH_INDEX = 4
 
   # Returns a salted PBKDF2 hash of the password.
+  # format: algorithm:iterations:hashSize:salt:hash
   def self.createHash( password )
     salt = SecureRandom.random_bytes( SALT_BYTE_SIZE )
     pbkdf2 = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
@@ -57,6 +59,7 @@ module PasswordHash
     parts = [
       "sha1",
       PBKDF2_ITERATIONS,
+      pbkdf2.bytesize(),
       Base64.strict_encode64( salt ),
       Base64.strict_encode64( pbkdf2 )
     ]
@@ -72,6 +75,7 @@ module PasswordHash
 
     pbkdf2 = Base64.strict_decode64( params[HASH_INDEX] )
     salt = Base64.strict_decode64( params[SALT_INDEX] )
+    return false if pbkdf2.bytesize() != params[HASH_SIZE_INDEX].to_i
 
     testHash = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
       password,
