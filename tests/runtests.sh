@@ -11,8 +11,11 @@ echo "---------------------------------------------"
 echo ""
 
 echo "RUBY"
-echo "---------------------------------------------"
-echo "WARNING: No tests!"
+ruby tests/test.rb
+if [ $? -ne 0 ]; then
+    echo "FAIL."
+    exit 1
+fi
 echo "---------------------------------------------"
 echo ""
 

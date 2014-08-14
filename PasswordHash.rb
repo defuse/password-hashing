@@ -73,8 +73,12 @@ module PasswordHash
     params = correctHash.split( SECTION_DELIMITER )
     return false if params.length != HASH_SECTIONS
 
-    pbkdf2 = Base64.strict_decode64( params[HASH_INDEX] )
-    salt = Base64.strict_decode64( params[SALT_INDEX] )
+    begin 
+      pbkdf2 = Base64.strict_decode64( params[HASH_INDEX] )
+      salt = Base64.strict_decode64( params[SALT_INDEX] )
+    rescue ArgumentError
+      return false
+    end
     return false if pbkdf2.bytesize() != params[HASH_SIZE_INDEX].to_i
 
     testHash = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
