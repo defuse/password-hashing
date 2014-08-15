@@ -30,6 +30,7 @@ echo "Java"
 echo "---------------------------------------------"
 # Compile the Java test files
 cp ./PasswordHash.java ./tests
+cd ./tests
 javac Test.java
 java Test
 if [ $? -ne 0 ]; then
@@ -38,11 +39,14 @@ if [ $? -ne 0 ]; then
     rm Test.class
     rm PasswordHash.class
     rm PasswordHash.java
+    cd ..
     exit 1
 fi
 # Cleanup
-rm PasswordHash.class
-rm ./tests/PasswordHash.java
+rm ./PasswordHash.class
+rm ./PasswordHash.java
+rm ./Test.class
+cd ..
 echo "---------------------------------------------"
 echo ""
 
