@@ -24,7 +24,7 @@ module Test
      break if badHash[ badHashLength - 3, 1] == ':'
     end
 
-    puts "Truncated hash: pass" if badResult == false
+    puts "Truncated hash test: pass" if badResult == false
   end
 end
   

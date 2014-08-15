@@ -49,8 +49,9 @@ public class PasswordHash
     public static final int PBKDF2_ITERATIONS = 1000;
 
     public static final int ITERATION_INDEX = 1;
-    public static final int SALT_INDEX = 2;
-    public static final int PBKDF2_INDEX = 3;
+    public static final int HASH_SIZE_INDEX = 2;
+    public static final int SALT_INDEX = 3;
+    public static final int PBKDF2_INDEX = 4;
 
     /**
      * Returns a salted PBKDF2 hash of the password.
@@ -80,8 +81,17 @@ public class PasswordHash
 
         // Hash the password
         byte[] hash = pbkdf2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
-        // format iterations:salt:hash
-        return "sha1:" + PBKDF2_ITERATIONS + ":" + toBase64(salt) + ":" +  toBase64(hash);
+        int hashSize = hash.length;
+
+        // format: algorithm:iterations:hashSize:salt:hash
+        String parts = "sha1:" +
+            PBKDF2_ITERATIONS +
+            ":" + hashSize +
+            ":" +
+            toBase64(salt) +
+            ":" +
+            toBase64(hash);
+        return parts;
     }
 
     /**
@@ -112,6 +122,19 @@ public class PasswordHash
         int iterations = Integer.parseInt(params[ITERATION_INDEX]);
         byte[] salt = fromBase64(params[SALT_INDEX]);
         byte[] hash = fromBase64(params[PBKDF2_INDEX]);
+        int storedHashSize = 0;
+
+        try { 
+            storedHashSize = Integer.parseInt(params[HASH_SIZE_INDEX]);
+        }
+        catch (NumberFormatException e) {
+            return false;
+        }
+
+        if (storedHashSize != hash.length) {
+            return false;
+        }
+
         // Compute the hash of the provided password, using the same salt, 
         // iteration count, and hash length
         byte[] testHash = pbkdf2(password, salt, iterations, hash.length);

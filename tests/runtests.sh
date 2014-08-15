@@ -28,7 +28,21 @@ echo ""
 
 echo "Java"
 echo "---------------------------------------------"
-echo "WARNING: No tests!"
+# Compile the Java test files
+cp ./PasswordHash.java ./tests
+javac Test.java
+java Test
+if [ $? -ne 0 ]; then
+    echo "FAIL."
+    # Cleanup
+    rm Test.class
+    rm PasswordHash.class
+    rm PasswordHash.java
+    exit 1
+fi
+# Cleanup
+rm PasswordHash.class
+rm ./tests/PasswordHash.java
 echo "---------------------------------------------"
 echo ""
 
