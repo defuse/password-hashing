@@ -40,6 +40,9 @@ public class Test {
                 System.exit(1);
             }
 
+        // The loop goes on until it is two characters away from the last : it
+        // finds. This is because the PBKDF2 function requires a hash that's at
+        // least 2 characters long. .
         } while (badHash.charAt(badHashLength - 3) != ':');
         
         if (badResult == false) {
