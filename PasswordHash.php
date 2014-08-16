@@ -29,7 +29,7 @@
 
 // These constants may be changed without breaking existing hashes.
 define("PBKDF2_HASH_ALGORITHM", "sha1");
-define("PBKDF2_ITERATIONS", 1000);
+define("PBKDF2_ITERATIONS", 32000);
 define("PBKDF2_SALT_BYTES", 24);
 define("PBKDF2_HASH_BYTES", 24);
 

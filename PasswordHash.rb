@@ -34,7 +34,7 @@ require 'base64'
 module PasswordHash
 
   # The following constants can be changed without breaking existing hashes.
-  PBKDF2_ITERATIONS = 1000
+  PBKDF2_ITERATIONS = 32000
   SALT_BYTE_SIZE = 24
   HASH_BYTE_SIZE = 24
 

@@ -30,6 +30,10 @@ class Test
                 System.Environment.Exit(1);
             }
 
+        // The loop goes on until it is two characters away from the last : it
+        // finds. This is because the PBKDF2 function requires a hash that's at
+        // least 2 characters long. This will be changed once exceptions are
+        // implemented.
         } while (badHash[badHashLength - 3] != ':');
 
         if (badResult == false) {
