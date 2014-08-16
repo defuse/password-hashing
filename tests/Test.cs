@@ -8,6 +8,7 @@ class Test
     {
         truncatedHashTest();
         basicTests();
+        testHashFunctionChecking();
     }
 
     // Make sure truncated hashes don't validate.
@@ -42,7 +43,7 @@ class Test
         }
     }
 
-    public static void basicTests()
+    private static void basicTests()
     {
         // Print out 10 hashes
         for(int i = 0; i < 10; i++) {
@@ -73,10 +74,23 @@ class Test
         }
         if(failure) {
             Console.WriteLine("TESTS FAILED!");
+            System.Environment.Exit(1);
         }
         else {
             Console.WriteLine("TESTS PASSED!");
         }
 
+    }
+
+    private static void testHashFunctionChecking()
+    {
+        string hash = PasswordHash.CreateHash("foobar");
+        hash = hash.Replace("sha1:", "sha256:");
+        if (PasswordHash.ValidatePassword("foobar", hash) == false) {
+            Console.WriteLine("Algorithm swap: pass");
+        } else {
+            Console.WriteLine("Algorithm swap: FAIL");
+            System.Environment.Exit(1);
+        }
     }
 }

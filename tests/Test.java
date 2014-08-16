@@ -2,6 +2,7 @@ public class Test {
     public static void main(String[] args) {
         basicTests();
         truncatedHashTest();
+        testHashFunctionChecking();
     }
 
     // Make sure truncated hashes don't validate.
@@ -84,14 +85,34 @@ public class Test {
                     failure = true;
                 }
             }
-            if(failure)
+            if(failure) {
                 System.out.println("TESTS FAILED!");
-            else
+                System.exit(1);
+            } else {
                 System.out.println("TESTS PASSED!");
+            }
         }
         catch(Exception ex)
         {
             System.out.println("ERROR: " + ex);
         }
+    }
+
+    public static void testHashFunctionChecking()
+    {
+        try {
+            String hash = PasswordHash.createHash("foobar");
+            hash = hash.replaceFirst("sha1:", "sha256:");
+            if (PasswordHash.validatePassword("foobar", hash) == false) {
+                System.out.println("Algorithm swap: pass");
+            } else {
+                System.out.println("Algorithm swap: FAIL");
+                System.exit(1);
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
     }
 }

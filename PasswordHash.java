@@ -48,6 +48,7 @@ public class PasswordHash
     public static final int HASH_BYTE_SIZE = 18;
     public static final int PBKDF2_ITERATIONS = 32000;
 
+    public static final int HASH_ALGORITHM_INDEX = 0;
     public static final int ITERATION_INDEX = 1;
     public static final int HASH_SIZE_INDEX = 2;
     public static final int SALT_INDEX = 3;
@@ -119,6 +120,12 @@ public class PasswordHash
     {
         // Decode the hash into its parameters
         String[] params = correctHash.split(":");
+
+        // Currently, Java only supports SHA1.
+        if (!params[HASH_ALGORITHM_INDEX].equals("sha1")) {
+            return false;
+        }
+
         int iterations = Integer.parseInt(params[ITERATION_INDEX]);
         byte[] salt = fromBase64(params[SALT_INDEX]);
         byte[] hash = fromBase64(params[PBKDF2_INDEX]);

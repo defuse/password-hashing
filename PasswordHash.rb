@@ -40,6 +40,7 @@ module PasswordHash
 
   HASH_SECTIONS = 5
   SECTION_DELIMITER = ':'
+  HASH_ALGORITHM_INDEX = 0
   ITERATIONS_INDEX = 1
   HASH_SIZE_INDEX = 2
   SALT_INDEX = 3
@@ -72,6 +73,7 @@ module PasswordHash
   def self.validatePassword( password, correctHash )
     params = correctHash.split( SECTION_DELIMITER )
     return false if params.length != HASH_SECTIONS
+    return false if params[HASH_ALGORITHM_INDEX] != "sha1"
 
     begin
       pbkdf2 = Base64.strict_decode64( params[HASH_INDEX] )

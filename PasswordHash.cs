@@ -45,6 +45,7 @@ namespace PasswordSecurity
         public const int HASH_BYTES = 18;
         public const int PBKDF2_ITERATIONS = 32000;
 
+        public const int HASH_ALGORITHM_INDEX = 0;
         public const int ITERATION_INDEX = 1;
         public const int HASH_SIZE_INDEX = 2;
         public const int SALT_INDEX = 3;
@@ -90,6 +91,11 @@ namespace PasswordSecurity
             char[] delimiter = { ':' };
             string[] split = goodHash.Split(delimiter);
             int iterations = Int32.Parse(split[ITERATION_INDEX]);
+
+            // Currently, we only support SHA1 with C#.
+            if (split[HASH_ALGORITHM_INDEX] != "sha1") {
+                return false;
+            }
 
             byte[] salt = null;
             byte[] hash = null;
