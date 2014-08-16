@@ -7,6 +7,7 @@ class Test
     public static void Main()
     {
         truncatedHashTest();
+        basicTests();
     }
 
     // Make sure truncated hashes don't validate.
@@ -39,5 +40,43 @@ class Test
         if (badResult == false) {
             Console.WriteLine("Truncated hash test: pass");
         }
+    }
+
+    public static void basicTests()
+    {
+        // Print out 10 hashes
+        for(int i = 0; i < 10; i++) {
+            Console.WriteLine(PasswordHash.CreateHash("p\r\nassw0Rd!"));
+        }
+
+        // Test password validation
+        bool failure = false;
+        Console.WriteLine("Running basic tests...");
+        for(int i = 0; i < 10; i++)
+        {
+            string password = "" + i;
+            string hash = PasswordHash.CreateHash(password);
+            string secondHash = PasswordHash.CreateHash(password);
+            if(hash == secondHash) {
+                Console.WriteLine("FAILURE: TWO HASHES ARE EQUAL!");
+                failure = true;
+            }
+            String wrongPassword = ""+(i+1);
+            if(PasswordHash.ValidatePassword(wrongPassword, hash)) {
+                Console.WriteLine("FAILURE: WRONG PASSWORD ACCEPTED!");
+                failure = true;
+            }
+            if(!PasswordHash.ValidatePassword(password, hash)) {
+                Console.WriteLine("FAILURE: GOOD PASSWORD NOT ACCEPTED!");
+                failure = true;
+            }
+        }
+        if(failure) {
+            Console.WriteLine("TESTS FAILED!");
+        }
+        else {
+            Console.WriteLine("TESTS PASSED!");
+        }
+
     }
 }

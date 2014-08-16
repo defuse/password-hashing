@@ -50,44 +50,6 @@ namespace PasswordSecurity
         public const int SALT_INDEX = 3;
         public const int PBKDF2_INDEX = 4;
 
-        public static void SelfTest()
-        {
-            // Print out 10 hashes
-            for(int i = 0; i < 10; i++) {
-                Console.WriteLine(PasswordHash.CreateHash("p\r\nassw0Rd!"));
-            }
-
-            // Test password validation
-            bool failure = false;
-            Console.WriteLine("Running tests...");
-            for(int i = 0; i < 100; i++)
-            {
-                string password = "" + i;
-                string hash = CreateHash(password);
-                string secondHash = CreateHash(password);
-                if(hash == secondHash) {
-                    Console.WriteLine("FAILURE: TWO HASHES ARE EQUAL!");
-                    failure = true;
-                }
-                String wrongPassword = ""+(i+1);
-                if(ValidatePassword(wrongPassword, hash)) {
-                    Console.WriteLine("FAILURE: WRONG PASSWORD ACCEPTED!");
-                    failure = true;
-                }
-                if(!ValidatePassword(password, hash)) {
-                    Console.WriteLine("FAILURE: GOOD PASSWORD NOT ACCEPTED!");
-                    failure = true;
-                }
-            }
-            if(failure) {
-                Console.WriteLine("TESTS FAILED!");
-            }
-            else {
-                Console.WriteLine("TESTS PASSED!");
-            }
-
-        }
-
         /// <summary>
         /// Creates a salted PBKDF2 hash of the password.
         /// </summary>
