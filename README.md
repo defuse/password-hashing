@@ -15,8 +15,7 @@ This library provides two methods: `CreateHash`, and `ValidatePassword`. The
 can be used to check if a password matches the one that was given to
 `CreateHash`. The `ValidatePassword` method takes a verifier string and
 a candidate password, and returns true if the candidate password is the same as
-the one that was originally given to `CreateHash` to produce the verifier
-string.
+the one that was originally given to `CreateHash`.
 
 The library takes care of salting internally, so the user of this library does
 not need to manually add salt or worry about storing the salt. The salt is
