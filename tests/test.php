@@ -122,7 +122,7 @@ function test()
     } while ($badHash[$badHashLength - 3] != ':');
     
     if($truncateTest) {
-        echo "Truncated hash: pass\n";
+        echo "Truncated hash test: pass\n";
     }
 
     return $all_tests_pass;

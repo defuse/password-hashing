@@ -30,7 +30,7 @@ using System;
 using System.Text;
 using System.Security.Cryptography;
 
-namespace PasswordHash
+namespace PasswordSecurity
 {
     /// <summary>
     /// Salted password hashing with PBKDF2-SHA1.
@@ -46,10 +46,11 @@ namespace PasswordHash
         public const int PBKDF2_ITERATIONS = 1000;
 
         public const int ITERATION_INDEX = 1;
-        public const int SALT_INDEX = 2;
-        public const int PBKDF2_INDEX = 3;
+        public const int HASH_SIZE_INDEX = 2;
+        public const int SALT_INDEX = 3;
+        public const int PBKDF2_INDEX = 4;
 
-        public static void Main(string[] args)
+        public static void SelfTest()
         {
             // Print out 10 hashes
             for(int i = 0; i < 10; i++) {
@@ -101,9 +102,18 @@ namespace PasswordHash
 
             // Hash the password and encode the parameters
             byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTES);
-            return "sha1:" + PBKDF2_ITERATIONS + ":" +
-                Convert.ToBase64String(salt) + ":" +
+            int hashSize = hash.Length;
+        
+            // format: algorithm:iterations:hashSize:salt:hash
+            String parts = "sha1:" +
+                PBKDF2_ITERATIONS +
+                ":" +
+                hashSize +
+                ":" +
+                Convert.ToBase64String(salt) + 
+                ":" +
                 Convert.ToBase64String(hash);
+            return parts;
         }
 
         /// <summary>
@@ -118,8 +128,38 @@ namespace PasswordHash
             char[] delimiter = { ':' };
             string[] split = goodHash.Split(delimiter);
             int iterations = Int32.Parse(split[ITERATION_INDEX]);
-            byte[] salt = Convert.FromBase64String(split[SALT_INDEX]);
-            byte[] hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
+            
+            byte[] salt = null;
+            byte[] hash = null;
+            int storedHashSize = 0;
+            try 
+            {
+                salt = Convert.FromBase64String(split[SALT_INDEX]);
+                hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
+            } 
+            catch (Exception e)
+            {
+                return false;
+            }
+
+            try
+            {
+                storedHashSize = Convert.ToInt32(split[HASH_SIZE_INDEX]);
+            }
+            catch (FormatException e)
+            {
+                Console.WriteLine("Input string is not a sequence of digits.");
+                return false;
+            }
+            catch (OverflowException e)
+            {
+                Console.WriteLine("The number cannot fit in an integer type.");
+                return false;
+            }
+
+            if (storedHashSize != hash.Length) {
+                return false;
+            }
 
             byte[] testHash = PBKDF2(password, salt, iterations, hash.Length);
             return SlowEquals(hash, testHash);
