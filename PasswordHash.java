@@ -48,6 +48,7 @@ public class PasswordHash
     public static final int HASH_BYTE_SIZE = 18;
     public static final int PBKDF2_ITERATIONS = 32000;
 
+    public static final int HASH_SECTIONS = 5;
     public static final int HASH_ALGORITHM_INDEX = 0;
     public static final int ITERATION_INDEX = 1;
     public static final int HASH_SIZE_INDEX = 2;
@@ -120,6 +121,9 @@ public class PasswordHash
     {
         // Decode the hash into its parameters
         String[] params = correctHash.split(":");
+        if (params.length != HASH_SECTIONS) {
+            return false;
+        }
 
         // Currently, Java only supports SHA1.
         if (!params[HASH_ALGORITHM_INDEX].equals("sha1")) {

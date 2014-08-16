@@ -70,8 +70,9 @@ class PasswordHash {
     public static function validate_password($password, $good_hash)
     {
         $params = explode(":", $good_hash);
-        if(count($params) < HASH_SECTIONS)
+        if(count($params) != HASH_SECTIONS) {
            return false;
+        }
         $pbkdf2 = base64_decode($params[HASH_PBKDF2_INDEX]);
 
         $storedHashSize = (int)$params[HASH_SIZE_INDEX];
