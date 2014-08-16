@@ -110,12 +110,10 @@ namespace PasswordSecurity
             }
             catch (FormatException)
             {
-                Console.WriteLine("Input string is not a sequence of digits.");
                 return false;
             }
             catch (OverflowException)
             {
-                Console.WriteLine("The number cannot fit in an integer type.");
                 return false;
             }
 
