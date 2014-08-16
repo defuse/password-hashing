@@ -31,7 +31,7 @@
 define("PBKDF2_HASH_ALGORITHM", "sha1");
 define("PBKDF2_ITERATIONS", 32000);
 define("PBKDF2_SALT_BYTES", 24);
-define("PBKDF2_HASH_BYTES", 24);
+define("PBKDF2_HASH_BYTES", 18);
 
 define("HASH_SECTIONS", 5);
 define("HASH_ALGORITHM_INDEX", 0);
