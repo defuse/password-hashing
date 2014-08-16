@@ -137,7 +137,7 @@ namespace PasswordSecurity
                 salt = Convert.FromBase64String(split[SALT_INDEX]);
                 hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
             } 
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }
@@ -146,12 +146,12 @@ namespace PasswordSecurity
             {
                 storedHashSize = Convert.ToInt32(split[HASH_SIZE_INDEX]);
             }
-            catch (FormatException e)
+            catch (FormatException)
             {
                 Console.WriteLine("Input string is not a sequence of digits.");
                 return false;
             }
-            catch (OverflowException e)
+            catch (OverflowException)
             {
                 Console.WriteLine("The number cannot fit in an integer type.");
                 return false;

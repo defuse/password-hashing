@@ -22,7 +22,23 @@ echo ""
 
 echo "C#"
 echo "---------------------------------------------"
-echo "WARNING: No tests!"
+# Compile the C# test files
+cp PasswordHash.cs ./tests
+cd tests
+mcs Test.cs PasswordHash.cs
+mono Test.exe
+if [ $? -ne 0 ]; then
+    echo "FAIL."
+    # Cleanup
+    rm Test.exe
+    rm PasswordHash.cs
+    cd ..
+    exit 1
+fi
+# Cleanup
+rm Test.exe
+rm PasswordHash.cs
+cd ..
 echo "---------------------------------------------"
 echo ""
 
