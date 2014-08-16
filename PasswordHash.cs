@@ -94,26 +94,21 @@ namespace PasswordSecurity
             byte[] salt = null;
             byte[] hash = null;
             int storedHashSize = 0;
-            try
-            {
+            try {
                 salt = Convert.FromBase64String(split[SALT_INDEX]);
                 hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
             }
-            catch (Exception)
-            {
+            catch (Exception) {
                 return false;
             }
 
-            try
-            {
+            try {
                 storedHashSize = Convert.ToInt32(split[HASH_SIZE_INDEX]);
             }
-            catch (FormatException)
-            {
+            catch (FormatException) {
                 return false;
             }
-            catch (OverflowException)
-            {
+            catch (OverflowException) {
                 return false;
             }
 
@@ -136,8 +131,9 @@ namespace PasswordSecurity
         private static bool SlowEquals(byte[] a, byte[] b)
         {
             uint diff = (uint)a.Length ^ (uint)b.Length;
-            for (int i = 0; i < a.Length && i < b.Length; i++)
+            for (int i = 0; i < a.Length && i < b.Length; i++) {
                 diff |= (uint)(a[i] ^ b[i]);
+            }
             return diff == 0;
         }
 
