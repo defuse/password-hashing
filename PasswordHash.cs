@@ -103,14 +103,14 @@ namespace PasswordSecurity
             // Hash the password and encode the parameters
             byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTES);
             int hashSize = hash.Length;
-        
+
             // format: algorithm:iterations:hashSize:salt:hash
             String parts = "sha1:" +
                 PBKDF2_ITERATIONS +
                 ":" +
                 hashSize +
                 ":" +
-                Convert.ToBase64String(salt) + 
+                Convert.ToBase64String(salt) +
                 ":" +
                 Convert.ToBase64String(hash);
             return parts;
@@ -128,15 +128,15 @@ namespace PasswordSecurity
             char[] delimiter = { ':' };
             string[] split = goodHash.Split(delimiter);
             int iterations = Int32.Parse(split[ITERATION_INDEX]);
-            
+
             byte[] salt = null;
             byte[] hash = null;
             int storedHashSize = 0;
-            try 
+            try
             {
                 salt = Convert.FromBase64String(split[SALT_INDEX]);
                 hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
-            } 
+            }
             catch (Exception)
             {
                 return false;

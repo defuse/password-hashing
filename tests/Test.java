@@ -1,7 +1,6 @@
 public class Test {
     public static void main(String[] args) {
         truncatedHashTest();
-
     }
 
     // Make sure truncated hashes don't validate.
@@ -14,17 +13,16 @@ public class Test {
 
         try {
             goodHash = PasswordHash.createHash(userString);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
         badHashLength = goodHash.length();
-        
+
         do {
             badHashLength -= 1;
             badHash = goodHash.substring(0, badHashLength);
-            
+
             try {
                 badResult = PasswordHash.validatePassword(userString, badHash);
             } catch (Exception e) {
@@ -33,7 +31,7 @@ public class Test {
             }
 
             if (badResult != false) {
-                System.err.println("Truncated hash test: FAIL " + 
+                System.err.println("Truncated hash test: FAIL " +
                     "(At hash length of " +
                     badHashLength + ")"
                     );
@@ -44,7 +42,7 @@ public class Test {
         // finds. This is because the PBKDF2 function requires a hash that's at
         // least 2 characters long.
         } while (badHash.charAt(badHashLength - 3) != ':');
-        
+
         if (badResult == false) {
             System.out.println("Truncated hash test: pass");
         }

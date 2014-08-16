@@ -73,7 +73,7 @@ module PasswordHash
     params = correctHash.split( SECTION_DELIMITER )
     return false if params.length != HASH_SECTIONS
 
-    begin 
+    begin
       pbkdf2 = Base64.strict_decode64( params[HASH_INDEX] )
       salt = Base64.strict_decode64( params[SALT_INDEX] )
     rescue ArgumentError

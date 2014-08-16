@@ -124,10 +124,9 @@ public class PasswordHash
         byte[] hash = fromBase64(params[PBKDF2_INDEX]);
         int storedHashSize = 0;
 
-        try { 
+        try {
             storedHashSize = Integer.parseInt(params[HASH_SIZE_INDEX]);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
         }
 
