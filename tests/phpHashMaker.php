@@ -28,9 +28,6 @@
  */
 require_once 'PasswordHash.php';
 
-    $err = fopen('php://stderr', 'w');
-    fwrite($err, "PHP VERSION: " . phpversion() . "\n");
-    
-    $testPassword = "DefuseDABomb!";
-    echo $testPassword . " " . PasswordHash::create_hash($testPassword) . "\n";
+$testPassword = "DefuseDABomb!";
+echo $testPassword . " " . PasswordHash::create_hash($testPassword) . "\n";
 

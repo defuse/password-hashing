@@ -59,13 +59,8 @@ public class Test {
     {
         try
         {
-            // Print out 10 hashes
-            for(int i = 0; i < 10; i++)
-                System.out.println(PasswordHash.createHash("p\r\nassw0Rd!"));
-
             // Test password validation
             boolean failure = false;
-            System.out.println("Running tests...");
             for(int i = 0; i < 10; i++)
             {
                 String password = ""+i;
@@ -88,13 +83,12 @@ public class Test {
             if(failure) {
                 System.out.println("TESTS FAILED!");
                 System.exit(1);
-            } else {
-                System.out.println("TESTS PASSED!");
             }
         }
         catch(Exception ex)
         {
             System.out.println("ERROR: " + ex);
+            System.exit(1);
         }
     }
 

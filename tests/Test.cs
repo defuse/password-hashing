@@ -45,41 +45,30 @@ class Test
 
     private static void basicTests()
     {
-        // Print out 10 hashes
-        for(int i = 0; i < 10; i++) {
-            Console.WriteLine(PasswordHash.CreateHash("p\r\nassw0Rd!"));
-        }
-
         // Test password validation
         bool failure = false;
-        Console.WriteLine("Running basic tests...");
         for(int i = 0; i < 10; i++)
         {
             string password = "" + i;
             string hash = PasswordHash.CreateHash(password);
             string secondHash = PasswordHash.CreateHash(password);
             if(hash == secondHash) {
-                Console.WriteLine("FAILURE: TWO HASHES ARE EQUAL!");
+                Console.WriteLine("Hashes of same password differ: FAIL");
                 failure = true;
             }
             String wrongPassword = ""+(i+1);
             if(PasswordHash.ValidatePassword(wrongPassword, hash)) {
-                Console.WriteLine("FAILURE: WRONG PASSWORD ACCEPTED!");
+                Console.WriteLine("Validate wrong password: FAIL");
                 failure = true;
             }
             if(!PasswordHash.ValidatePassword(password, hash)) {
-                Console.WriteLine("FAILURE: GOOD PASSWORD NOT ACCEPTED!");
+                Console.WriteLine("Correct password: FAIL");
                 failure = true;
             }
         }
         if(failure) {
-            Console.WriteLine("TESTS FAILED!");
             System.Environment.Exit(1);
         }
-        else {
-            Console.WriteLine("TESTS PASSED!");
-        }
-
     }
 
     private static void testHashFunctionChecking()

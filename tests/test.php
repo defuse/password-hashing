@@ -39,10 +39,6 @@ function test()
 {
     $all_tests_pass = true;
 
-    echo "Sample hash:\n";
-    $hash = PasswordHash::create_hash("test_password");
-    echo $hash . "\n\n";
-
     // Test vector raw output.
     $a = bin2hex(PasswordHash::pbkdf2("sha1", "password", "salt", 2, 20, true));
     $b = "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957";
