@@ -29,6 +29,7 @@ verifier string into the database:
     User Registers for Account (username, password):
         Ensure username does not already exist in the database.
         verifier = CreateHash(password)
+        If CreateHash threw an exception, stop and alert a human.
         Store (username, verifier) in the database.
 
 ### Validating a Password
@@ -41,8 +42,27 @@ and use it to check if the password is correct:
         If no record is found for the given username, return false.
         If ValidatePassword(password, verifier) is true:
             The password is correct. Return true.
-        Otherwise,
+        Otherwise, if it is false:
             The password is wrong. Return false.
+        Otherwise, if it threw an exception:
+            Stop and alert a human.
+
+### Exception Handling
+
+Both `CreateHash` and `ValidatePassword` can throw the following exceptions. If
+your code is secure, it will always catch these exceptions and deal with them.
+If either of these exceptions are thrown, it is usually indicative of something
+being *seriously* wrong, so a human should be alerted whenever they are.
+
+- `InvalidVerifierException`: The password verifier was corrupted or changed
+  between when it was returned by `CreateHash` and passed to `ValidatePassword`.
+  If this happens, it could mean your database is configured incorrectly, or the
+  code that inserts and retrieves from the database is wrong.
+
+- `CannotPerformOperationException`: This happens when the operation you asked
+  for could not be performed securely. For example, if the random number
+  generator fails when generating a salt, this exception will be thrown. Another
+  example is when the hash algorithm is not supported by the system.
 
 Customization
 --------------
