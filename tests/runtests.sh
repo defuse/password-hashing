@@ -75,3 +75,26 @@ if [ $? -ne 0 ]; then
 fi
 echo "---------------------------------------------"
 echo ""
+
+echo "PHP<->Java Compatibility"
+echo "---------------------------------------------"
+# Compile the Java test files
+cp ./PasswordHash.java ./tests
+cd ./tests
+javac JavaAndPHPCompatibility.java
+java JavaAndPHPCompatibility
+if [ $? -ne 0 ]; then
+    echo "FAIL."
+    # Cleanup
+    rm JavaAndPHPCompatibility.class
+    rm PasswordHash.class
+    rm PasswordHash.java
+    cd ..
+    exit 1
+fi
+# Cleanup
+rm ./PasswordHash.class
+rm ./PasswordHash.java
+rm ./JavaAndPHPCompatibility.class
+cd ..
+echo "---------------------------------------------"
