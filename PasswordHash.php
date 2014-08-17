@@ -31,7 +31,7 @@
 define("PBKDF2_HASH_ALGORITHM", "sha1");
 define("PBKDF2_ITERATIONS", 32000);
 define("PBKDF2_SALT_BYTES", 24);
-define("PBKDF2_HASH_BYTES", 24);
+define("PBKDF2_HASH_BYTES", 18);
 
 define("HASH_SECTIONS", 5);
 define("HASH_ALGORITHM_INDEX", 0);
@@ -70,8 +70,9 @@ class PasswordHash {
     public static function validate_password($password, $good_hash)
     {
         $params = explode(":", $good_hash);
-        if(count($params) < HASH_SECTIONS)
+        if(count($params) != HASH_SECTIONS) {
            return false;
+        }
         $pbkdf2 = base64_decode($params[HASH_PBKDF2_INDEX]);
 
         $storedHashSize = (int)$params[HASH_SIZE_INDEX];

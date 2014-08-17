@@ -125,5 +125,14 @@ function test()
         echo "Truncated hash test: pass\n";
     }
 
+    // Make sure changing the algorithm breaks the hash.
+    $hash = PasswordHash::create_hash("foobar");
+    $hash = str_replace("sha1:", "sha256:", $hash);
+    if (PasswordHash::validate_password("foobar", $hash) === FALSE) {
+        echo "Algorithm swap: pass\n";
+    } else {
+        echo "Algorithm swap: FAIL\n";
+        $all_tests_pass = false;
+    }
     return $all_tests_pass;
 }

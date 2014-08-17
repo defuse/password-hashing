@@ -2,69 +2,49 @@ require_relative '../PasswordHash.rb'
 
 module TestRubyAndPhpCompatiblity
   def self.testRubyHash()
-    puts 'Creating a hash using the Ruby implementation...'
-
     userString = "RedragonX!"
     rubyHash = PasswordHash.createHash( userString )
-    puts rubyHash
 
-    puts ''
-    puts 'Now validating this hash using a PHP implementation'
-    result = system *%W(php tests/phpValidate.php #{userString} #{rubyHash})
-    if !result
-      puts 'ERROR: validation failed for a Ruby hash in PHP implementation!!!'
-      exit(1)
+    result = system(*["php", "tests/phpValidate.php", userString, rubyHash])
+    # System returns true if zero, false if non-zero exit status.
+    if result
+      puts 'Ruby hash validating in PHP: pass'
     else
-      puts 'SUCCESS: Hash validation passed '
+      puts 'Ruby hash validating in PHP: FAIL'
+      exit(1)
     end
 
     # Test an incorrect password too
     badPassword = "badpw"
-    puts 'Now testing a bad password using a PHP implementation'
-    result = system *%W(php tests/phpValidate.php #{badPassword} #{rubyHash})
-    if !result
-      puts 'SUCCESS: The PHP implementation did not accept a bad password.'
+    result = system(*["php", "tests/phpValidate.php", badPassword, rubyHash])
+    if result == false
+      puts "Ruby hash validating bad password in PHP: pass"
     else
-      puts 'ERROR: bad password test failed for a Ruby hash in PHP implementation!!!'
+      puts "Ruby hash validating bad password in PHP: FAIL"
       exit(1)
     end
-
-    puts ''
-    puts '----------------------------------------'
-    puts ''
   end
 
   def self.testPHPHash()
-
-    puts 'Now testing a random PHP hash with a Ruby implementation...'
-    puts ''
-
     testData = `php tests/phpHashMaker.php`
     testData = testData.split(' ')
 
     testPw = testData[0]
     testHash = testData[1]
 
-    puts "Using #{testPw} as the password and using #{testHash} as the PHP hash "
-    puts ''
-
     if PasswordHash.validatePassword(testPw, testHash)
-      puts 'SUCCESS: PHP hash validation passed!'
+      puts "PHP hash validating in Ruby: pass"
     else
-      puts 'ERROR: PHP hash validation failed!!!'
+      puts "PHP hash validating in Ruby: FAIL"
       exit(1)
     end
-
-    puts ''
-    puts 'Now testing a bad password with a Ruby implementation...'
-    puts ''
 
     badPw = "baddd"
 
     if !PasswordHash.validatePassword(badPw, testHash)
-      puts 'SUCCESS: The Ruby implementation did not accept a bad password.'
+      puts "PHP hash validating bad password in Ruby: pass"
     else
-      puts 'ERROR: bad password test failed for a Ruby hash in PHP implementation!!!'
+      puts "PHP hash validating bad password in Ruby: FAIL"
       exit(1)
     end
   end

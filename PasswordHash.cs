@@ -42,51 +42,15 @@ namespace PasswordSecurity
     {
         // The following constants may be changed without breaking existing hashes.
         public const int SALT_BYTES = 24;
-        public const int HASH_BYTES = 24;
+        public const int HASH_BYTES = 18;
         public const int PBKDF2_ITERATIONS = 32000;
 
+        public const int HASH_SECTIONS = 5;
+        public const int HASH_ALGORITHM_INDEX = 0;
         public const int ITERATION_INDEX = 1;
         public const int HASH_SIZE_INDEX = 2;
         public const int SALT_INDEX = 3;
         public const int PBKDF2_INDEX = 4;
-
-        public static void SelfTest()
-        {
-            // Print out 10 hashes
-            for(int i = 0; i < 10; i++) {
-                Console.WriteLine(PasswordHash.CreateHash("p\r\nassw0Rd!"));
-            }
-
-            // Test password validation
-            bool failure = false;
-            Console.WriteLine("Running tests...");
-            for(int i = 0; i < 100; i++)
-            {
-                string password = "" + i;
-                string hash = CreateHash(password);
-                string secondHash = CreateHash(password);
-                if(hash == secondHash) {
-                    Console.WriteLine("FAILURE: TWO HASHES ARE EQUAL!");
-                    failure = true;
-                }
-                String wrongPassword = ""+(i+1);
-                if(ValidatePassword(wrongPassword, hash)) {
-                    Console.WriteLine("FAILURE: WRONG PASSWORD ACCEPTED!");
-                    failure = true;
-                }
-                if(!ValidatePassword(password, hash)) {
-                    Console.WriteLine("FAILURE: GOOD PASSWORD NOT ACCEPTED!");
-                    failure = true;
-                }
-            }
-            if(failure) {
-                Console.WriteLine("TESTS FAILED!");
-            }
-            else {
-                Console.WriteLine("TESTS PASSED!");
-            }
-
-        }
 
         /// <summary>
         /// Creates a salted PBKDF2 hash of the password.
@@ -127,33 +91,34 @@ namespace PasswordSecurity
             // Extract the parameters from the hash
             char[] delimiter = { ':' };
             string[] split = goodHash.Split(delimiter);
+            if (split.Length != HASH_SECTIONS) {
+                return false;
+            }
+
+            // Currently, we only support SHA1 with C#.
+            if (split[HASH_ALGORITHM_INDEX] != "sha1") {
+                return false;
+            }
             int iterations = Int32.Parse(split[ITERATION_INDEX]);
 
             byte[] salt = null;
             byte[] hash = null;
             int storedHashSize = 0;
-            try
-            {
+            try {
                 salt = Convert.FromBase64String(split[SALT_INDEX]);
                 hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
             }
-            catch (Exception)
-            {
+            catch (Exception) {
                 return false;
             }
 
-            try
-            {
+            try {
                 storedHashSize = Convert.ToInt32(split[HASH_SIZE_INDEX]);
             }
-            catch (FormatException)
-            {
-                Console.WriteLine("Input string is not a sequence of digits.");
+            catch (FormatException) {
                 return false;
             }
-            catch (OverflowException)
-            {
-                Console.WriteLine("The number cannot fit in an integer type.");
+            catch (OverflowException) {
                 return false;
             }
 
@@ -176,8 +141,9 @@ namespace PasswordSecurity
         private static bool SlowEquals(byte[] a, byte[] b)
         {
             uint diff = (uint)a.Length ^ (uint)b.Length;
-            for (int i = 0; i < a.Length && i < b.Length; i++)
+            for (int i = 0; i < a.Length && i < b.Length; i++) {
                 diff |= (uint)(a[i] ^ b[i]);
+            }
             return diff == 0;
         }
 

@@ -45,9 +45,11 @@ public class PasswordHash
 
     // The following constants may be changed without breaking existing hashes.
     public static final int SALT_BYTE_SIZE = 24;
-    public static final int HASH_BYTE_SIZE = 24;
+    public static final int HASH_BYTE_SIZE = 18;
     public static final int PBKDF2_ITERATIONS = 32000;
 
+    public static final int HASH_SECTIONS = 5;
+    public static final int HASH_ALGORITHM_INDEX = 0;
     public static final int ITERATION_INDEX = 1;
     public static final int HASH_SIZE_INDEX = 2;
     public static final int SALT_INDEX = 3;
@@ -119,6 +121,15 @@ public class PasswordHash
     {
         // Decode the hash into its parameters
         String[] params = correctHash.split(":");
+        if (params.length != HASH_SECTIONS) {
+            return false;
+        }
+
+        // Currently, Java only supports SHA1.
+        if (!params[HASH_ALGORITHM_INDEX].equals("sha1")) {
+            return false;
+        }
+
         int iterations = Integer.parseInt(params[ITERATION_INDEX]);
         byte[] salt = fromBase64(params[SALT_INDEX]);
         byte[] hash = fromBase64(params[PBKDF2_INDEX]);
@@ -196,52 +207,6 @@ public class PasswordHash
     private static String toBase64(byte[] array)
     {
         return DatatypeConverter.printBase64Binary(array);
-    }
-
-    /**
-     * Tests the basic functionality of the PasswordHash class
-     *
-     * @param   args        ignored
-     */
-    public static void main(String[] args)
-    {
-        try
-        {
-            // Print out 10 hashes
-            for(int i = 0; i < 10; i++)
-                System.out.println(PasswordHash.createHash("p\r\nassw0Rd!"));
-
-            // Test password validation
-            boolean failure = false;
-            System.out.println("Running tests...");
-            for(int i = 0; i < 100; i++)
-            {
-                String password = ""+i;
-                String hash = createHash(password);
-                String secondHash = createHash(password);
-                if(hash.equals(secondHash)) {
-                    System.out.println("FAILURE: TWO HASHES ARE EQUAL!");
-                    failure = true;
-                }
-                String wrongPassword = ""+(i+1);
-                if(validatePassword(wrongPassword, hash)) {
-                    System.out.println("FAILURE: WRONG PASSWORD ACCEPTED!");
-                    failure = true;
-                }
-                if(!validatePassword(password, hash)) {
-                    System.out.println("FAILURE: GOOD PASSWORD NOT ACCEPTED!");
-                    failure = true;
-                }
-            }
-            if(failure)
-                System.out.println("TESTS FAILED!");
-            else
-                System.out.println("TESTS PASSED!");
-        }
-        catch(Exception ex)
-        {
-            System.out.println("ERROR: " + ex);
-        }
     }
 
 }
