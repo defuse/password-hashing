@@ -41,14 +41,19 @@ if ($argc != 3 || in_array($argv[1], array('--help', '-help', '-h', '-?'))) {
 
 function validateTestHash( $password, $hash )
 {
-    $testResult = PasswordHash::validate_password( $password, $hash );
+    try {
+        $testResult = PasswordHash::validate_password( $password, $hash );
+    } catch (InvalidVerifierException $ex) {
+        exit(1);
+    } catch (CannotPerformOperationException $ex) {
+        exit(1);
+    }
 
     if ($testResult) {
-        echo "Validation passed!\n\n";
         exit(0);
+    } else {
+        exit(1);
     }
-    echo "Validation failed!\n\n";
-    exit(1);
 }
 
 ?>

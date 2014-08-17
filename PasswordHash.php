@@ -40,29 +40,37 @@ define("HASH_SIZE_INDEX", 2);
 define("HASH_SALT_INDEX", 3);
 define("HASH_PBKDF2_INDEX", 4);
 
+class InvalidVerifierException extends Exception {}
+class CannotPerformOperationException extends Exception {}
+
 class PasswordHash {
 
     public static function create_hash($password)
     {
         // format: algorithm:iterations:hashSize:salt:hash
-        $salt = base64_encode(mcrypt_create_iv(PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM));
+        $salt_raw = mcrypt_create_iv(PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM);
+        if ($salt_raw === false) {
+            throw new CannotPerformOperationException(
+                "Random number generator failed. Not safe to proceed."
+            );
+        }
+
         $PBKDF2_Output = self::pbkdf2(
             PBKDF2_HASH_ALGORITHM,
             $password,
-            base64_decode($salt),
+            $salt_raw,
             PBKDF2_ITERATIONS,
             PBKDF2_HASH_BYTES,
             true
         );
 
-        $hashSize = strlen($PBKDF2_Output);
         return PBKDF2_HASH_ALGORITHM . 
             ":" .
             PBKDF2_ITERATIONS . 
             ":" .
-            $hashSize . 
+            PBKDF2_HASH_BYTES . 
             ":" .
-            $salt . 
+            base64_encode($salt_raw) . 
             ":" .
             base64_encode($PBKDF2_Output);
     }
@@ -71,14 +79,37 @@ class PasswordHash {
     {
         $params = explode(":", $good_hash);
         if(count($params) != HASH_SECTIONS) {
-           return false;
+            throw new InvalidVerifierException(
+                "Fields are missing from the password verifier."
+            );
         }
-        $pbkdf2 = base64_decode($params[HASH_PBKDF2_INDEX]);
+
+        $pbkdf2 = base64_decode($params[HASH_PBKDF2_INDEX], true);
+        if ($pbkdf2 === false) {
+            throw new InvalidVerifierException(
+                "Base64 decoding of pbkdf2 output failed."
+            );
+        }
+
+        $salt_raw = base64_decode($params[HASH_SALT_INDEX], true);
+        if ($salt_raw === false) {
+            throw new InvalidVerifierException(
+                "Base64 decoding of salt failed."
+            );
+        }
 
         $storedHashSize = (int)$params[HASH_SIZE_INDEX];
-
         if (strlen($pbkdf2) !== $storedHashSize) {
-            return false;
+            throw new InvalidVerifierException(
+                "Hash length doesn't match stored hash length."
+            );
+        }
+
+        $iterations = (int)$params[HASH_ITERATION_INDEX];
+        if ($iterations < 1) {
+            throw new InvalidVerifierException(
+                "Invalid number of iterations. Must be >= 1."
+            );
         }
  
         return self::slow_equals(
@@ -86,8 +117,8 @@ class PasswordHash {
             self::pbkdf2(
                 $params[HASH_ALGORITHM_INDEX],
                 $password,
-                base64_decode($params[HASH_SALT_INDEX]),
-                (int)$params[HASH_ITERATION_INDEX],
+                $salt_raw,
+                $iterations,
                 strlen($pbkdf2),
                 true
             )
@@ -123,10 +154,16 @@ class PasswordHash {
     public static function pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output = false)
     {
         $algorithm = strtolower($algorithm);
-        if(!in_array($algorithm, hash_algos(), true))
-            trigger_error('PBKDF2 ERROR: Invalid hash algorithm.', E_USER_ERROR);
-        if($count <= 0 || $key_length <= 0)
-            trigger_error('PBKDF2 ERROR: Invalid parameters.', E_USER_ERROR);
+        if(!in_array($algorithm, hash_algos(), true)) {
+            throw new CannotPerformOperationException(
+                "Invalid or unsupported hash algorithm."
+            );
+        }
+        if($count <= 0 || $key_length <= 0) {
+            throw new CannotPerformOperationException(
+                "Invalid PBKDF2 parameters."
+            );
+        }
     
         if (function_exists("hash_pbkdf2")) {
             // The output length is in NIBBLES (4-bits) if $raw_output is false!
@@ -152,10 +189,11 @@ class PasswordHash {
             $output .= $xorsum;
         }
     
-        if($raw_output)
+        if($raw_output) {
             return substr($output, 0, $key_length);
-        else
+        } else {
             return bin2hex(substr($output, 0, $key_length));
+        }
     }
 
 }

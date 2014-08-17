@@ -89,9 +89,12 @@ function test()
         $all_tests_pass = false;
     }
     
-    // Bad hash return FALSE.
-    $result = PasswordHash::validate_password("password", "");
-    if ($result === FALSE) {
+    // Bad verifier raises InvalidVerifierException
+    $raised = false;
+    try {
+        $result = PasswordHash::validate_password("password", "");
+    } catch (InvalidVerifierException $ex) { $raised = true; }
+    if ($raised) {
         echo "Bad hash: pass\n";
     } else {
         echo "Bad hash: FAIL\n";
@@ -105,9 +108,12 @@ function test()
     do {
         $badHashLength -= 1;
         $badHash = substr($hash, 0, $badHashLength);
-        $badResult = PasswordHash::validate_password("correct_password", $badHash);
+        $raised = false;
+        try {
+            $badResult = PasswordHash::validate_password("correct_password", $badHash);
+        } catch (InvalidVerifierException $ex) { $raised = true; }
 
-        if ($badResult !== false) {
+        if (!$raised) {
             echo "Truncated hash test: FAIL " . 
                 "(At hash length of " . $badHashLength . ") \n";
 
