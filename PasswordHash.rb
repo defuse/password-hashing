@@ -28,6 +28,12 @@ require 'securerandom'
 require 'openssl'
 require 'base64'
 
+class InvalidVerifierError < StandardError
+end
+
+class CannotPerformOperationException < StandardError
+end
+
 # Salted password hashing with PBKDF2-SHA1.
 # Authors: @RedragonX (dicesoft.net), havoc AT defuse.ca 
 # www: http://crackstation.net/hashing-security.htm
@@ -49,7 +55,14 @@ module PasswordHash
   # Returns a salted PBKDF2 hash of the password.
   # format: algorithm:iterations:hashSize:salt:hash
   def self.createHash( password )
-    salt = SecureRandom.random_bytes( SALT_BYTE_SIZE )
+    begin
+      salt = SecureRandom.random_bytes( SALT_BYTE_SIZE )
+    rescue NotImplementedError
+      raise CannotPerformOperationException.new(
+        "Random number generator not available."
+      )
+    end
+
     pbkdf2 = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
       password,
       salt,
@@ -72,21 +85,52 @@ module PasswordHash
   # correctHash must be a hash string generated with createHash.
   def self.validatePassword( password, correctHash )
     params = correctHash.split( SECTION_DELIMITER )
-    return false if params.length != HASH_SECTIONS
-    return false if params[HASH_ALGORITHM_INDEX] != "sha1"
+
+    if params.length != HASH_SECTIONS
+      raise InvalidVerifierError.new(
+        "Fields are missing from the password verifier"
+      )
+    end
+
+    if params[HASH_ALGORITHM_INDEX] != "sha1"
+      raise CannotPerformOperationException.new(
+        "Unsupported hash type."
+      )
+    end
 
     begin
       pbkdf2 = Base64.strict_decode64( params[HASH_INDEX] )
-      salt = Base64.strict_decode64( params[SALT_INDEX] )
     rescue ArgumentError
-      return false
+      raise InvalidVerifierError.new(
+        "Base64 decoding of pbkdf2 output failed."
+      )
     end
-    return false if pbkdf2.bytesize() != params[HASH_SIZE_INDEX].to_i
+
+    begin
+      salt = Base64.strict_decode64( params[SALT_INDEX] )
+    rescue
+      raise InvalidVerifierError.new(
+        "Base64 decoding of salt failed."
+      )
+    end
+
+    if pbkdf2.bytesize() != params[HASH_SIZE_INDEX].to_i
+      raise InvalidVerifierError.new(
+        "Hash length doesn't match stored hash length."
+      )
+    end
+
+    iterations = params[ITERATIONS_INDEX].to_i
+    if iterations < 1
+      raise InvalidVerifierError.new(
+        "Invalid number of iterations. Must be >= 1."
+      )
+    end
 
     testHash = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
       password,
       salt,
-      params[ITERATIONS_INDEX].to_i,
+      iterations,
       pbkdf2.length
     )
 

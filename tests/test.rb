@@ -11,27 +11,39 @@ module Test
     userString = "awesomeBooks!"
     hash = PasswordHash.createHash( userString )
     badHashLength = hash.length
-    badResult = false
 
     loop do
       badHashLength -= 1
       badHash = hash[0...badHashLength]
-      badResult = PasswordHash.validatePassword( userString, badHash )
 
-      if badResult != false
+      raised = false
+      begin
+        PasswordHash.validatePassword( userString, badHash )
+      rescue InvalidVerifierError
+        raised = true
+      end
+
+      if !raised
         puts "Truncated hash test: FAIL (At hash length of #{badHashLength})"
         exit(1)
       end
      break if badHash[ badHashLength - 3, 1] == ':'
     end
 
-    puts "Truncated hash test: pass" if badResult == false
+    puts "Truncated hash test: pass"
   end
 
   def self.testHashFunctionChecking
     hash = PasswordHash.createHash("foobar")
     hash = hash.sub("sha1:", "sha256:")
-    if PasswordHash.validatePassword("foobar", hash) == false
+    raised = false
+    begin
+      PasswordHash.validatePassword("foobar", hash)
+    rescue CannotPerformOperationException
+      raised = true
+    end
+
+    if raised
       puts "Algorithm swap: pass"
     else
       puts "Algorithm swap: FAIL"
