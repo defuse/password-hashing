@@ -90,7 +90,8 @@ public class JavaAndPHPCompatibility {
     private static boolean phpValidate(String password, String hash)
     {
         Process phpTest = null;
-        ProcessBuilder pb = new ProcessBuilder("php",
+        ProcessBuilder pb = new ProcessBuilder(
+            "php",
             "tests/phpValidate.php",
             password,
             hash
@@ -120,7 +121,8 @@ public class JavaAndPHPCompatibility {
     private static PasswordHashPair getPHPHash()
     {
         Process phpTest = null;
-        ProcessBuilder pb = new ProcessBuilder("php",
+        ProcessBuilder pb = new ProcessBuilder(
+            "php",
             "tests/phpHashMaker.php"
         );
 
