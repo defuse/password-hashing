@@ -32,7 +32,7 @@ public class JavaAndPHPCompatibility {
         }
 
         Process phpTest = null;
-        ProcessBuilder pb = new ProcessBuilder("/usr/bin/php",
+        ProcessBuilder pb = new ProcessBuilder("php",
             "tests/phpValidate.php",
             userString,
             javaHash
@@ -80,7 +80,7 @@ public class JavaAndPHPCompatibility {
         }
 
         Process phpTest = null;
-        ProcessBuilder pb = new ProcessBuilder("/usr/bin/php",
+        ProcessBuilder pb = new ProcessBuilder("php",
             "tests/phpValidate.php",
             "badPW",
             javaHash
@@ -119,7 +119,7 @@ public class JavaAndPHPCompatibility {
         String[] testData = null;
 
         Process phpTest = null;
-        ProcessBuilder pb = new ProcessBuilder("/usr/bin/php",
+        ProcessBuilder pb = new ProcessBuilder("php",
             "tests/phpHashMaker.php"
             );
 
@@ -178,7 +178,7 @@ public class JavaAndPHPCompatibility {
         String[] testData = null;
 
         Process phpTest = null;
-        ProcessBuilder pb = new ProcessBuilder("/usr/bin/php",
+        ProcessBuilder pb = new ProcessBuilder("php",
             "tests/phpHashMaker.php"
             );
 
