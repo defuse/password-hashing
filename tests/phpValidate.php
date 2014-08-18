@@ -36,10 +36,10 @@ if ($argc != 3 || in_array($argv[1], array('--help', '-help', '-h', '-?'))) {
     validateTestHash($argv[1], $argv[2]);
 }
 
-function validateTestHash( $password, $hash )
+function validateTestHash($password, $hash)
 {
     try {
-        $testResult = PasswordHash::validate_password( $password, $hash );
+        $testResult = PasswordHash::validate_password($password, $hash);
     } catch (InvalidVerifierException $ex) {
         exit(1);
     } catch (CannotPerformOperationException $ex) {
