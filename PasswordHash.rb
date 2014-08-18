@@ -88,7 +88,7 @@ module PasswordHash
 
     if params.length != HASH_SECTIONS
       raise InvalidVerifierError.new(
-        "Fields are missing from the password verifier"
+        "Fields are missing from the password verifier."
       )
     end
 

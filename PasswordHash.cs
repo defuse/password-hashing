@@ -32,6 +32,24 @@ using System.Security.Cryptography;
 
 namespace PasswordSecurity
 {
+    class InvalidVerifierException : Exception
+    {
+        public InvalidVerifierException() { }
+        public InvalidVerifierException(string message)
+            : base(message) { }
+        public InvalidVerifierException(string message, Exception inner)
+            : base(message, inner) { }
+    }
+
+    class CannotPerformOperationException : Exception
+    {
+        public CannotPerformOperationException() { }
+        public CannotPerformOperationException(string message)
+            : base(message) { }
+        public CannotPerformOperationException(string message, Exception inner)
+            : base(message, inner) { }
+    }
+
     /// <summary>
     /// Salted password hashing with PBKDF2-SHA1.
     /// Author: havoc AT defuse.ca
@@ -62,17 +80,28 @@ namespace PasswordSecurity
             // Generate a random salt
             RNGCryptoServiceProvider csprng = new RNGCryptoServiceProvider();
             byte[] salt = new byte[SALT_BYTES];
-            csprng.GetBytes(salt);
+            try {
+                csprng.GetBytes(salt);
+            } catch (CryptographicException ex) {
+                throw new CannotPerformOperationException(
+                    "Random number generator not available.",
+                    ex
+                );
+            } catch (ArgumentNullException ex) {
+                throw new CannotPerformOperationException(
+                    "Invalid argument given to random number generator.",
+                    ex
+                );
+            }
 
             // Hash the password and encode the parameters
             byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTES);
-            int hashSize = hash.Length;
 
             // format: algorithm:iterations:hashSize:salt:hash
             String parts = "sha1:" +
                 PBKDF2_ITERATIONS +
                 ":" +
-                hashSize +
+                hash.Length +
                 ":" +
                 Convert.ToBase64String(salt) +
                 ":" +
@@ -91,39 +120,102 @@ namespace PasswordSecurity
             // Extract the parameters from the hash
             char[] delimiter = { ':' };
             string[] split = goodHash.Split(delimiter);
+
             if (split.Length != HASH_SECTIONS) {
-                return false;
+                throw new InvalidVerifierException(
+                    "Fields are missing from the password verifier."
+                );
             }
 
             // Currently, we only support SHA1 with C#.
             if (split[HASH_ALGORITHM_INDEX] != "sha1") {
-                return false;
+                throw new CannotPerformOperationException(
+                    "Unsupported hash type."
+                );
             }
-            int iterations = Int32.Parse(split[ITERATION_INDEX]);
+
+            int iterations = 0;
+            try {
+                iterations = Int32.Parse(split[ITERATION_INDEX]);
+            } catch (ArgumentNullException ex) {
+                throw new CannotPerformOperationException(
+                    "Invalid argument given to Int32.Parse",
+                    ex
+                );
+            } catch (FormatException ex) {
+                throw new InvalidVerifierException(
+                    "Could not parse the iteration count as an integer.",
+                    ex
+                );
+            } catch (OverflowException ex) {
+                throw new InvalidVerifierException(
+                    "The iteration count is too large to be represented.",
+                    ex
+                );
+            }
+
+            if (iterations < 1) {
+                throw new InvalidVerifierException(
+                    "Invalid number of iterations. Must be >= 1."
+                );
+            }
 
             byte[] salt = null;
-            byte[] hash = null;
-            int storedHashSize = 0;
             try {
                 salt = Convert.FromBase64String(split[SALT_INDEX]);
-                hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
             }
-            catch (Exception) {
-                return false;
+            catch (ArgumentNullException ex) {
+                throw new CannotPerformOperationException(
+                    "Invalid argument given to Convert.FromBase64String",
+                    ex
+                );
+            } catch (FormatException ex) {
+                throw new InvalidVerifierException(
+                    "Base64 decoding of salt failed.",
+                    ex
+                );
             }
 
+            byte[] hash = null;
             try {
-                storedHashSize = Convert.ToInt32(split[HASH_SIZE_INDEX]);
+                hash = Convert.FromBase64String(split[PBKDF2_INDEX]);
             }
-            catch (FormatException) {
-                return false;
+            catch (ArgumentNullException ex) {
+                throw new CannotPerformOperationException(
+                    "Invalid argument given to Convert.FromBase64String",
+                    ex
+                );
+            } catch (FormatException ex) {
+                throw new InvalidVerifierException(
+                    "Base64 decoding of pbkdf2 output failed.",
+                    ex
+                );
             }
-            catch (OverflowException) {
-                return false;
+
+            int storedHashSize = 0;
+            try {
+                storedHashSize = Int32.Parse(split[HASH_SIZE_INDEX]);
+            } catch (ArgumentNullException ex) {
+                throw new CannotPerformOperationException(
+                    "Invalid argument given to Int32.Parse",
+                    ex
+                );
+            } catch (FormatException ex) {
+                throw new InvalidVerifierException(
+                    "Could not parse the hash size as an integer.",
+                    ex
+                );
+            } catch (OverflowException ex) {
+                throw new InvalidVerifierException(
+                    "The hash size is too large to be represented.",
+                    ex
+                );
             }
 
             if (storedHashSize != hash.Length) {
-                return false;
+                throw new InvalidVerifierException(
+                    "Hash length doesn't match stored hash length."
+                );
             }
 
             byte[] testHash = PBKDF2(password, salt, iterations, hash.Length);

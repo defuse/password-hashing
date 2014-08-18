@@ -19,14 +19,18 @@ class Test
         string badHash = "";
 
         int badHashLength = goodHash.Length;
-        bool badResult = false;
 
         do {
             badHashLength -= 1;
             badHash = goodHash.Substring(0, badHashLength);
-            badResult = PasswordHash.ValidatePassword(userString, badHash);
+            bool raised = false;
+            try {
+                PasswordHash.ValidatePassword(userString, badHash);
+            } catch (InvalidVerifierException) {
+                raised = true;
+            }
 
-            if (badResult != false) {
+            if (!raised) {
                 Console.WriteLine("Truncated hash test: FAIL " +
                     "(At hash length of " + badHashLength + ")");
                 System.Environment.Exit(1);
@@ -38,9 +42,7 @@ class Test
         // implemented.
         } while (badHash[badHashLength - 3] != ':');
 
-        if (badResult == false) {
-            Console.WriteLine("Truncated hash test: pass");
-        }
+        Console.WriteLine("Truncated hash test: pass");
     }
 
     private static void basicTests()
@@ -75,7 +77,15 @@ class Test
     {
         string hash = PasswordHash.CreateHash("foobar");
         hash = hash.Replace("sha1:", "sha256:");
-        if (PasswordHash.ValidatePassword("foobar", hash) == false) {
+
+        bool raised = false;
+        try {
+            PasswordHash.ValidatePassword("foobar", hash);
+        } catch (CannotPerformOperationException) {
+            raised = true;
+        }
+
+        if (raised) {
             Console.WriteLine("Algorithm swap: pass");
         } else {
             Console.WriteLine("Algorithm swap: FAIL");
