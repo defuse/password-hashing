@@ -122,7 +122,7 @@ public class JavaAndPHPCompatibility {
         Process phpTest = null;
         ProcessBuilder pb = new ProcessBuilder("php",
             "tests/phpHashMaker.php"
-            );
+        );
 
         pb.directory(new File(".."));
 
