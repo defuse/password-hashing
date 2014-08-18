@@ -1,18 +1,18 @@
 import java.io.*;
 
 public class JavaAndPHPCompatibility {
-    
+
     public static void main(String[] args)
     {
         testJavaHash();
         testPHPHash();
     }
-    
+
     private static void testJavaHash() {
         javaGoodHashTest();
         javaBadHashTest();
     }
-    
+
     private static void testPHPHash() {
         testGoodPHPHash();
         testBadPHPHash();
@@ -24,7 +24,7 @@ public class JavaAndPHPCompatibility {
         String javaHash = "";
 
         try {
-            javaHash = PasswordHash.createHash(userString); 
+            javaHash = PasswordHash.createHash(userString);
         } catch (Exception e) {
             System.out.println("ERROR: validation failed for a Java hash in PHP implementation!!!");
             System.out.println(e.getMessage());
@@ -59,20 +59,20 @@ public class JavaAndPHPCompatibility {
             System.exit(1);
         }
 
-        if (phpTest.exitValue() == 1) { 
+        if (phpTest.exitValue() == 1) {
             System.out.println("ERROR: validation failed for a Java hash in PHP implementation!!!");
             System.exit(1);
         } else {
             System.out.println("SUCCESS: Hash validation passed");
         }
     }
-    
+
     private static void javaBadHashTest() {
         String userString = "RedragonX!";
         String javaHash = "";
 
         try {
-            javaHash = PasswordHash.createHash(userString); 
+            javaHash = PasswordHash.createHash(userString);
         } catch (Exception e) {
             System.out.println("ERROR: bad password test failed for a Ruby hash in PHP implementation!!!");
             System.out.println(e.getMessage());
@@ -107,14 +107,14 @@ public class JavaAndPHPCompatibility {
             System.exit(1);
         }
 
-        if (phpTest.exitValue() == 1) { 
+        if (phpTest.exitValue() == 1) {
             System.out.println("SUCCESS: The PHP implementation did not accept a bad password.");
         } else {
             System.out.println("ERROR: bad password test failed for a Ruby hash in PHP implementation!!!");
             System.exit(1);
         }
     }
-    
+
     private static void testGoodPHPHash() {
         String[] testData = null;
 
@@ -161,7 +161,7 @@ public class JavaAndPHPCompatibility {
         testData = s.split(" ");
 
         try {
-            if (PasswordHash.validatePassword(testData[0], testData[1])) { 
+            if (PasswordHash.validatePassword(testData[0], testData[1])) {
                 System.out.println("SUCCESS: PHP hash validation in a Java implementation passed");
             } else {
                 System.out.println("ERROR: bad password test failed for a PHP hash in a Java implementation!!!");
@@ -220,7 +220,7 @@ public class JavaAndPHPCompatibility {
         testData = s.split(" ");
 
         try {
-            if (!PasswordHash.validatePassword("badPW", testData[1])) { 
+            if (!PasswordHash.validatePassword("badPW", testData[1])) {
                 System.out.println("SUCCESS: The Java implementation did not accept a bad password.");
             } else {
                 System.out.println("ERROR: bad password test failed for a PHP hash in a Java implementation!!!");

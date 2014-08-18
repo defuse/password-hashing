@@ -3,7 +3,7 @@ using System;
 using System.Text;
 using System.Diagnostics;
 
-class CSharpAndPHPCompatibility 
+class CSharpAndPHPCompatibility
 {
     private struct CommandExecResult
     {
@@ -11,7 +11,7 @@ class CSharpAndPHPCompatibility
         public string stdOut;
     }
 
-    public static void Main() 
+    public static void Main()
     {
        testCSharpHashes();
        testPHPHashes();
@@ -20,22 +20,22 @@ class CSharpAndPHPCompatibility
     private static void testCSharpHashes()
     {
         // good C# hash test 
-        string userPW = "RedragonX!"; 
+        string userPW = "RedragonX!";
         string goodHash = PasswordHash.CreateHash(userPW);
 
-        string args = "tests/phpValidate.php" + 
-            " " + 
+        string args = "tests/phpValidate.php" +
+            " " +
             userPW +
             " " +
-            goodHash; 
-        
+            goodHash;
+
         CommandExecResult goodHashExecution = RunCommand("php", args);
 
-        if (goodHashExecution.exitCode == 0) 
+        if (goodHashExecution.exitCode == 0)
         {
             Console.WriteLine("The PHP implementation accepts C# hashes: pass");
         }
-        else if (goodHashExecution.exitCode == 1) 
+        else if (goodHashExecution.exitCode == 1)
         {
             Console.WriteLine("The PHP implementation does not accept C# hashes: FAIL");
             System.Environment.Exit(1);
@@ -43,20 +43,20 @@ class CSharpAndPHPCompatibility
 
         string badPW = "ctfred";
         // bad c# hash test
-        args = "tests/phpValidate.php" + 
-            " " + 
+        args = "tests/phpValidate.php" +
+            " " +
             badPW +
             " " +
-            goodHash; 
-        
+            goodHash;
+
         CommandExecResult badHashExecution = RunCommand("php", args);
 
-        if (badHashExecution.exitCode == 0) 
+        if (badHashExecution.exitCode == 0)
         {
             Console.WriteLine("The PHP implementation accepts BAD C# hashes: FAIL");
             System.Environment.Exit(1);
         }
-        else if (badHashExecution.exitCode == 1) 
+        else if (badHashExecution.exitCode == 1)
         {
             Console.WriteLine("The PHP implementation does not accept bad C# hashes: pass");
         }
@@ -72,7 +72,7 @@ class CSharpAndPHPCompatibility
         p.StartInfo.Arguments = args;
         p.StartInfo.UseShellExecute = false;
         p.StartInfo.RedirectStandardOutput = true;
-        try 
+        try
         {
             p.Start();
 
@@ -92,13 +92,13 @@ class CSharpAndPHPCompatibility
         return cmdResult;
     }
 
-    private static void testPHPHashes() 
+    private static void testPHPHashes()
     {
         // good PHP hash test 
         string[] testData = null;
         char[] useDelimiter = { ' ' };
-        string args = "tests/phpHashMaker.php"; 
-        
+        string args = "tests/phpHashMaker.php";
+
         CommandExecResult goodHashExecution = RunCommand("php", args);
 
         testData = goodHashExecution.stdOut.Split(useDelimiter);
@@ -107,12 +107,12 @@ class CSharpAndPHPCompatibility
         {
             Console.WriteLine("The C# implementation accepts PHP hashes: pass");
         }
-        else 
+        else
         {
             Console.WriteLine("The C# implementation does not accept PHP hashes: FAIL");
             System.Environment.Exit(1);
         }
-        
+
         // bad PHP hash test
         CommandExecResult badHashExecution = RunCommand("php", args);
         string badPW = "badPW";
@@ -124,7 +124,7 @@ class CSharpAndPHPCompatibility
             Console.WriteLine("The C# implementation accepts BAD PHP hashes: FAIL");
             System.Environment.Exit(1);
         }
-        else 
+        else
         {
             Console.WriteLine("The C# implementation will not accept bad PHP hashes: pass");
         }
