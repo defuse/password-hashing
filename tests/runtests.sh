@@ -98,3 +98,26 @@ rm ./PasswordHash.java
 rm ./JavaAndPHPCompatibility.class
 cd ..
 echo "---------------------------------------------"
+echo ""
+
+echo "PHP<->C# Compatibility"
+echo "---------------------------------------------"
+# Compile the C# test files
+cp PasswordHash.cs ./tests
+cd tests
+mcs CSharpAndPHPCompatibility.cs PasswordHash.cs
+mono CSharpAndPHPCompatibility.exe
+if [ $? -ne 0 ]; then
+    echo "FAIL."
+    # Cleanup
+    rm CSharpAndPHPCompatibility.exe
+    rm PasswordHash.cs
+    cd ..
+    exit 1
+fi
+# Cleanup
+rm CSharpAndPHPCompatibility.exe
+rm PasswordHash.cs
+cd ..
+echo "---------------------------------------------"
+echo ""
