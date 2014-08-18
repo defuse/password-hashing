@@ -1,4 +1,6 @@
-public class Test {
+public class Test
+{
+
     public static void main(String[] args) {
         basicTests();
         truncatedHashTest();
@@ -11,12 +13,11 @@ public class Test {
         String goodHash = "";
         String badHash = "";
         int badHashLength = 0;
-        boolean badResult = false;
 
         try {
             goodHash = PasswordHash.createHash(userString);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            System.out.println(e.getMessage());
             System.exit(1);
         }
         badHashLength = goodHash.length();
@@ -25,15 +26,18 @@ public class Test {
             badHashLength -= 1;
             badHash = goodHash.substring(0, badHashLength);
 
+            boolean raised = false;
             try {
-                badResult = PasswordHash.validatePassword(userString, badHash);
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
+                PasswordHash.validatePassword(userString, badHash);
+            } catch (PasswordHash.InvalidVerifierException ex) {
+                raised = true;
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
                 System.exit(1);
             }
 
-            if (badResult != false) {
-                System.err.println("Truncated hash test: FAIL " +
+            if (!raised) {
+                System.out.println("Truncated hash test: FAIL " +
                     "(At hash length of " +
                     badHashLength + ")"
                     );
@@ -45,9 +49,7 @@ public class Test {
         // least 2 characters long.
         } while (badHash.charAt(badHashLength - 3) != ':');
 
-        if (badResult == false) {
-            System.out.println("Truncated hash test: pass");
-        }
+        System.out.println("Truncated hash test: pass");
     }
 
     /**
@@ -97,7 +99,15 @@ public class Test {
         try {
             String hash = PasswordHash.createHash("foobar");
             hash = hash.replaceFirst("sha1:", "sha256:");
-            if (PasswordHash.validatePassword("foobar", hash) == false) {
+
+            boolean raised = false;
+            try {
+                PasswordHash.validatePassword("foobar", hash);
+            } catch (PasswordHash.CannotPerformOperationException ex) {
+                raised = true;
+            }
+
+            if (raised) {
                 System.out.println("Algorithm swap: pass");
             } else {
                 System.out.println("Algorithm swap: FAIL");
