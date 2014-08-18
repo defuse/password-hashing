@@ -21,6 +21,10 @@ The library takes care of salting internally, so the user of this library does
 not need to manually add salt or worry about storing the salt. The salt is
 encoded into the verifier string.
 
+The different implementations are compatibile with each other. So a hash
+produced with one implementation can later be used to verify the password in
+a different one.
+
 ### Creating a Hash
 
 When a user account is created, store their username and their password's
