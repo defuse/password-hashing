@@ -1,6 +1,6 @@
 <?php
 /* 
- * Password Hashing With PBKDF2 (http://crackstation.net/hashing-security.htm).
+ * Password Storage With PBKDF2 (http://crackstation.net/hashing-security.htm).
  * Copyright (c) 2013, Taylor Hornby
  * All rights reserved.
  *
@@ -27,27 +27,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// These constants may be changed without breaking existing hashes.
+// These constants may be changed without breaking existing verifiers.
 define("PBKDF2_HASH_ALGORITHM", "sha1");
 define("PBKDF2_ITERATIONS", 32000);
 define("PBKDF2_SALT_BYTES", 24);
-define("PBKDF2_HASH_BYTES", 18);
+define("PBKDF2_OUTPUT_BYTES", 18);
 
-define("HASH_SECTIONS", 5);
-define("HASH_ALGORITHM_INDEX", 0);
-define("HASH_ITERATION_INDEX", 1);
-define("HASH_SIZE_INDEX", 2);
-define("HASH_SALT_INDEX", 3);
-define("HASH_PBKDF2_INDEX", 4);
+define("VERIFIER_SECTIONS", 5);
+define("VERIFIER_ALGORITHM_INDEX", 0);
+define("VERIFIER_ITERATION_INDEX", 1);
+define("VERIFIER_SIZE_INDEX", 2);
+define("VERIFIER_SALT_INDEX", 3);
+define("VERIFIER_PBKDF2_INDEX", 4);
 
 class InvalidVerifierException extends Exception {}
 class CannotPerformOperationException extends Exception {}
 
-class PasswordHash {
+class PasswordStorage {
 
-    public static function create_hash($password)
+    public static function create_verifier($password)
     {
-        // format: algorithm:iterations:hashSize:salt:hash
+        // format: algorithm:iterations:outputSize:salt:pbkdf2output
         $salt_raw = mcrypt_create_iv(PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM);
         if ($salt_raw === false) {
             throw new CannotPerformOperationException(
@@ -60,7 +60,7 @@ class PasswordHash {
             $password,
             $salt_raw,
             PBKDF2_ITERATIONS,
-            PBKDF2_HASH_BYTES,
+            PBKDF2_OUTPUT_BYTES,
             true
         );
 
@@ -68,44 +68,44 @@ class PasswordHash {
             ":" .
             PBKDF2_ITERATIONS . 
             ":" .
-            PBKDF2_HASH_BYTES . 
+            PBKDF2_OUTPUT_BYTES . 
             ":" .
             base64_encode($salt_raw) . 
             ":" .
             base64_encode($PBKDF2_Output);
     }
     
-    public static function validate_password($password, $good_hash)
+    public static function validate_password($password, $verifier)
     {
-        $params = explode(":", $good_hash);
-        if(count($params) != HASH_SECTIONS) {
+        $params = explode(":", $verifier);
+        if(count($params) != VERIFIER_SECTIONS) {
             throw new InvalidVerifierException(
                 "Fields are missing from the password verifier."
             );
         }
 
-        $pbkdf2 = base64_decode($params[HASH_PBKDF2_INDEX], true);
+        $pbkdf2 = base64_decode($params[VERIFIER_PBKDF2_INDEX], true);
         if ($pbkdf2 === false) {
             throw new InvalidVerifierException(
                 "Base64 decoding of pbkdf2 output failed."
             );
         }
 
-        $salt_raw = base64_decode($params[HASH_SALT_INDEX], true);
+        $salt_raw = base64_decode($params[VERIFIER_SALT_INDEX], true);
         if ($salt_raw === false) {
             throw new InvalidVerifierException(
                 "Base64 decoding of salt failed."
             );
         }
 
-        $storedHashSize = (int)$params[HASH_SIZE_INDEX];
-        if (strlen($pbkdf2) !== $storedHashSize) {
+        $storedOutputSize = (int)$params[VERIFIER_SIZE_INDEX];
+        if (strlen($pbkdf2) !== $storedOutputSize) {
             throw new InvalidVerifierException(
-                "Hash length doesn't match stored hash length."
+                "PBKDF2 output length doesn't match stored output length."
             );
         }
 
-        $iterations = (int)$params[HASH_ITERATION_INDEX];
+        $iterations = (int)$params[VERIFIER_ITERATION_INDEX];
         if ($iterations < 1) {
             throw new InvalidVerifierException(
                 "Invalid number of iterations. Must be >= 1."
@@ -115,7 +115,7 @@ class PasswordHash {
         return self::slow_equals(
             $pbkdf2,
             self::pbkdf2(
-                $params[HASH_ALGORITHM_INDEX],
+                $params[VERIFIER_ALGORITHM_INDEX],
                 $password,
                 $salt_raw,
                 $iterations,

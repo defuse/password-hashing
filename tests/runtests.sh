@@ -121,3 +121,12 @@ rm PasswordHash.cs
 cd ..
 echo "---------------------------------------------"
 echo ""
+
+echo "Correct terminology"
+echo "---------------------------------------------"
+./tests/uses-correct-terminology.sh
+if [ $? -ne 0 ]; then
+    echo "FAIL."
+    exit 1
+fi
+echo "---------------------------------------------"
