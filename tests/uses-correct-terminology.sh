@@ -9,7 +9,8 @@ HASH_HITS=$(                                    \
     grep -v "hash_pbkdf2" |                     \
     grep -v "hash_hmac" |                       \
     grep -v "\$hash_length" |                   \
-    grep -v "hashing-security.htm" |          \
+    grep -v "hashing-security.htm" |            \
+    grep -v "Unsupported hash type" |           \
     grep -v "hash("                             \
 )
 

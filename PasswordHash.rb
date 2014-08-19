@@ -1,4 +1,4 @@
-# Password Hashing With PBKDF2 (http://crackstation.net/hashing-security.htm).
+# Password Storage With PBKDF2 (http://crackstation.net/hashing-security.htm).
 # Copyright (c) 2013, Taylor Hornby
 # All rights reserved.
 # 
@@ -34,29 +34,27 @@ end
 class CannotPerformOperationException < StandardError
 end
 
-# Salted password hashing with PBKDF2-SHA1.
+# Password storage with PBKDF2-SHA1.
 # Authors: @RedragonX (dicesoft.net), havoc AT defuse.ca 
 # www: http://crackstation.net/hashing-security.htm
-module PasswordHash
+module PasswordStorage
 
-  # The following constants can be changed without breaking existing hashes.
+  # The following constants can be changed without breaking existing verifiers.
   PBKDF2_ITERATIONS = 32000
-  SALT_BYTE_SIZE = 24
-  HASH_BYTE_SIZE = 18
+  PBKDF2_SALT_BYTES = 24
+  PBKDF2_OUTPUT_BYTES = 18
 
-  HASH_SECTIONS = 5
   SECTION_DELIMITER = ':'
-  HASH_ALGORITHM_INDEX = 0
-  ITERATIONS_INDEX = 1
-  HASH_SIZE_INDEX = 2
-  SALT_INDEX = 3
-  HASH_INDEX = 4
+  VERIFIER_SECTIONS = 5
+  VERIFIER_ALGORITHM_INDEX = 0
+  VERIFIER_ITERATIONS_INDEX = 1
+  VERIFIER_SIZE_INDEX = 2
+  VERIFIER_SALT_INDEX = 3
+  VERIFIER_PBKDF2_INDEX = 4
 
-  # Returns a salted PBKDF2 hash of the password.
-  # format: algorithm:iterations:hashSize:salt:hash
-  def self.createHash( password )
+  def self.createVerifier( password )
     begin
-      salt = SecureRandom.random_bytes( SALT_BYTE_SIZE )
+      salt = SecureRandom.random_bytes( PBKDF2_SALT_BYTES )
     rescue NotImplementedError
       raise CannotPerformOperationException.new(
         "Random number generator not available."
@@ -67,7 +65,7 @@ module PasswordHash
       password,
       salt,
       PBKDF2_ITERATIONS,
-      HASH_BYTE_SIZE
+      PBKDF2_OUTPUT_BYTES
     )
 
     parts = [
@@ -81,25 +79,23 @@ module PasswordHash
     return parts.join( SECTION_DELIMITER )
   end
 
-  # Checks if a password is correct given a hash of the correct one.
-  # correctHash must be a hash string generated with createHash.
-  def self.validatePassword( password, correctHash )
-    params = correctHash.split( SECTION_DELIMITER )
+  def self.validatePassword( password, verifier )
+    params = verifier.split( SECTION_DELIMITER )
 
-    if params.length != HASH_SECTIONS
+    if params.length != VERIFIER_SECTIONS
       raise InvalidVerifierError.new(
         "Fields are missing from the password verifier."
       )
     end
 
-    if params[HASH_ALGORITHM_INDEX] != "sha1"
+    if params[VERIFIER_ALGORITHM_INDEX] != "sha1"
       raise CannotPerformOperationException.new(
         "Unsupported hash type."
       )
     end
 
     begin
-      pbkdf2 = Base64.strict_decode64( params[HASH_INDEX] )
+      pbkdf2 = Base64.strict_decode64( params[VERIFIER_PBKDF2_INDEX] )
     rescue ArgumentError
       raise InvalidVerifierError.new(
         "Base64 decoding of pbkdf2 output failed."
@@ -107,34 +103,34 @@ module PasswordHash
     end
 
     begin
-      salt = Base64.strict_decode64( params[SALT_INDEX] )
+      salt = Base64.strict_decode64( params[VERIFIER_SALT_INDEX] )
     rescue
       raise InvalidVerifierError.new(
         "Base64 decoding of salt failed."
       )
     end
 
-    if pbkdf2.bytesize() != params[HASH_SIZE_INDEX].to_i
+    if pbkdf2.bytesize() != params[VERIFIER_SIZE_INDEX].to_i
       raise InvalidVerifierError.new(
-        "Hash length doesn't match stored hash length."
+        "PBKDF2 output length doesn't match stored output length."
       )
     end
 
-    iterations = params[ITERATIONS_INDEX].to_i
+    iterations = params[VERIFIER_ITERATIONS_INDEX].to_i
     if iterations < 1
       raise InvalidVerifierError.new(
         "Invalid number of iterations. Must be >= 1."
       )
     end
 
-    testHash = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
+    testOutput = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
       password,
       salt,
       iterations,
       pbkdf2.length
     )
 
-    return slow_equals(pbkdf2, testHash)
+    return slow_equals(pbkdf2, testOutput)
   end
 
   def self.slow_equals(a, b)
@@ -146,26 +142,24 @@ module PasswordHash
     result == 0
   end
 
-  # Run tests to ensure the module is functioning properly.
-  # Returns true if all tests succeed, false if not.
   def self.runSelfTests
-    puts "Sample hashes:"
-    3.times { puts createHash("password") }
+    puts "Sample verifiers:"
+    3.times { puts createVerifier("password") }
 
     puts "\nRunning Ruby self tests..."
     @@allPass = true
 
     correctPassword = 'aaaaaaaaaa'
     wrongPassword = 'aaaaaaaaab'
-    hash = createHash(correctPassword)
+    verifier = createVerifier(correctPassword)
 
-    assert( validatePassword( correctPassword, hash ) == true, "correct password" )
-    assert( validatePassword( wrongPassword, hash ) == false, "wrong password" )
+    assert( validatePassword( correctPassword, verifier ) == true, "correct password" )
+    assert( validatePassword( wrongPassword, verifier ) == false, "wrong password" )
 
-    h1 = hash.split( SECTION_DELIMITER )
-    h2 = createHash( correctPassword ).split( SECTION_DELIMITER )
-    assert( h1[HASH_INDEX] != h2[HASH_INDEX], "different hashes" )
-    assert( h1[SALT_INDEX] != h2[SALT_INDEX], "different salt" )
+    h1 = verifier.split( SECTION_DELIMITER )
+    h2 = createVerifier( correctPassword ).split( SECTION_DELIMITER )
+    assert( h1[VERIFIER_PBKDF2_INDEX] != h2[VERIFIER_PBKDF2_INDEX], "different verifier" )
+    assert( h1[VERIFIER_SALT_INDEX] != h2[VERIFIER_SALT_INDEX], "different salt" )
 
     if @@allPass
       puts "*** ALL TESTS PASS ***"
@@ -188,6 +182,6 @@ module PasswordHash
 end
 
 if __FILE__ == $0
-  PasswordHash.runSelfTests
+  PasswordStorage.runSelfTests
 end
 
