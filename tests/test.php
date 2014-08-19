@@ -40,7 +40,7 @@ function test()
     $all_tests_pass = true;
 
     // Test vector raw output.
-    $a = bin2hex(PasswordHash::pbkdf2("sha1", "password", "salt", 2, 20, true));
+    $a = bin2hex(PasswordStorage::pbkdf2("sha1", "password", "salt", 2, 20, true));
     $b = "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957";
     if ($a === $b) {
         echo "Test vector 1: pass\n";
@@ -50,7 +50,7 @@ function test()
     }
 
     // Test vector hex output.
-    $a = PasswordHash::pbkdf2("sha1", "password", "salt", 2, 20, false);
+    $a = PasswordStorage::pbkdf2("sha1", "password", "salt", 2, 20, false);
     $b = "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957";
     if ($a === $b) {
         echo "Test vector 2: pass\n";
@@ -59,10 +59,10 @@ function test()
         $all_tests_pass = false;
     }
 
-    $hash = PasswordHash::create_hash("correct_password");
+    $hash = PasswordStorage::create_verifier("correct_password");
 
     // Right password returns true.
-    $result = PasswordHash::validate_password("correct_password", $hash);
+    $result = PasswordStorage::validate_password("correct_password", $hash);
     if ($result === TRUE)
     {
         echo "Correct password: pass\n";
@@ -74,7 +74,7 @@ function test()
     }
 
     // Wrong password returns false.
-    $result = PasswordHash::validate_password("wrong_password", $hash);
+    $result = PasswordStorage::validate_password("wrong_password", $hash);
     if ($result === FALSE)
     {
         echo "Wrong password: pass\n";
@@ -88,7 +88,7 @@ function test()
     // Bad verifier raises InvalidVerifierException
     $raised = false;
     try {
-        $result = PasswordHash::validate_password("password", "");
+        $result = PasswordStorage::validate_password("password", "");
     } catch (InvalidVerifierException $ex) { $raised = true; }
     if ($raised) {
         echo "Bad hash: pass\n";
@@ -106,7 +106,7 @@ function test()
         $badHash = substr($hash, 0, $badHashLength);
         $raised = false;
         try {
-            $badResult = PasswordHash::validate_password("correct_password", $badHash);
+            $badResult = PasswordStorage::validate_password("correct_password", $badHash);
         } catch (InvalidVerifierException $ex) { $raised = true; }
 
         if (!$raised) {
@@ -128,9 +128,9 @@ function test()
     }
 
     // Make sure changing the algorithm breaks the hash.
-    $hash = PasswordHash::create_hash("foobar");
+    $hash = PasswordStorage::create_verifier("foobar");
     $hash = str_replace("sha1:", "sha256:", $hash);
-    if (PasswordHash::validate_password("foobar", $hash) === FALSE) {
+    if (PasswordStorage::validate_password("foobar", $hash) === FALSE) {
         echo "Algorithm swap: pass\n";
     } else {
         echo "Algorithm swap: FAIL\n";

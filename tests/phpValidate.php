@@ -39,7 +39,7 @@ if ($argc != 3 || in_array($argv[1], array('--help', '-help', '-h', '-?'))) {
 function validateTestHash($password, $hash)
 {
     try {
-        $testResult = PasswordHash::validate_password($password, $hash);
+        $testResult = PasswordStorage::validate_password($password, $hash);
     } catch (InvalidVerifierException $ex) {
         exit(1);
     } catch (CannotPerformOperationException $ex) {
