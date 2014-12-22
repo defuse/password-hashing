@@ -159,6 +159,18 @@ class PasswordStorage {
                 "Invalid or unsupported hash algorithm."
             );
         }
+
+        // Whitelist, or we could end up with people using CRC32.
+        $ok_algorithms = array(
+            "sha1", "sha224", "sha256", "sha384", "sha512",
+            "ripemd160", "ripemd256", "ripemd320", "whirlpool"
+        );
+        if (!in_array($algorithm, $ok_algorithms, true)) {
+            throw new CannotPerformOperationException(
+                "Algorithm is not a secure cryptographic hash function."
+            );
+        }
+
         if($count <= 0 || $key_length <= 0) {
             throw new CannotPerformOperationException(
                 "Invalid PBKDF2 parameters."

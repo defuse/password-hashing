@@ -11,7 +11,8 @@ HASH_HITS=$(                                    \
     grep -v "\$hash_length" |                   \
     grep -v "hashing-security.htm" |            \
     grep -v "Unsupported hash type" |           \
-    grep -v "hash("                             \
+    grep -v "hash(" |                           \
+    grep -v "secure cryptographic hash"
 )
 
 if [[ -n $HASH_HITS ]]; then
