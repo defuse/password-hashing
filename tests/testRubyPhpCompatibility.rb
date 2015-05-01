@@ -3,9 +3,9 @@ require_relative '../PasswordHash.rb'
 module TestRubyAndPhpCompatiblity
   def self.testRubyHash()
     userString = "RedragonX!"
-    rubyHash = PasswordStorage.createVerifier( userString )
+    rubyHash = PasswordStorage.createHash( userString )
 
-    result = system(*["php", "tests/phpValidate.php", userString, rubyHash])
+    result = system(*["php", "tests/phpVerify.php", userString, rubyHash])
     # System returns true if zero, false if non-zero exit status.
     if result
       puts 'Ruby hash validating in PHP: pass'
@@ -16,7 +16,7 @@ module TestRubyAndPhpCompatiblity
 
     # Test an incorrect password too
     badPassword = "badpw"
-    result = system(*["php", "tests/phpValidate.php", badPassword, rubyHash])
+    result = system(*["php", "tests/phpVerify.php", badPassword, rubyHash])
     if result == false
       puts "Ruby hash validating bad password in PHP: pass"
     else
@@ -32,7 +32,7 @@ module TestRubyAndPhpCompatiblity
     testPw = testData[0]
     testHash = testData[1]
 
-    if PasswordStorage.validatePassword(testPw, testHash)
+    if PasswordStorage.verifyPassword(testPw, testHash)
       puts "PHP hash validating in Ruby: pass"
     else
       puts "PHP hash validating in Ruby: FAIL"
@@ -41,7 +41,7 @@ module TestRubyAndPhpCompatiblity
 
     badPw = "baddd"
 
-    if !PasswordStorage.validatePassword(badPw, testHash)
+    if !PasswordStorage.verifyPassword(badPw, testHash)
       puts "PHP hash validating bad password in Ruby: pass"
     else
       puts "PHP hash validating bad password in Ruby: FAIL"

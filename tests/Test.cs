@@ -15,7 +15,7 @@ class Test
     private static void truncatedHashTest()
     {
         string userString = "C# is cray cray!";
-        string goodHash = PasswordHash.CreateHash(userString);
+        string goodHash = PasswordStorage.CreateHash(userString);
         string badHash = "";
 
         int badHashLength = goodHash.Length;
@@ -25,8 +25,8 @@ class Test
             badHash = goodHash.Substring(0, badHashLength);
             bool raised = false;
             try {
-                PasswordHash.ValidatePassword(userString, badHash);
-            } catch (InvalidVerifierException) {
+                PasswordStorage.VerifyPassword(userString, badHash);
+            } catch (InvalidHashException) {
                 raised = true;
             }
 
@@ -52,18 +52,18 @@ class Test
         for(int i = 0; i < 10; i++)
         {
             string password = "" + i;
-            string hash = PasswordHash.CreateHash(password);
-            string secondHash = PasswordHash.CreateHash(password);
+            string hash = PasswordStorage.CreateHash(password);
+            string secondHash = PasswordStorage.CreateHash(password);
             if(hash == secondHash) {
                 Console.WriteLine("Hashes of same password differ: FAIL");
                 failure = true;
             }
             String wrongPassword = ""+(i+1);
-            if(PasswordHash.ValidatePassword(wrongPassword, hash)) {
+            if(PasswordStorage.VerifyPassword(wrongPassword, hash)) {
                 Console.WriteLine("Validate wrong password: FAIL");
                 failure = true;
             }
-            if(!PasswordHash.ValidatePassword(password, hash)) {
+            if(!PasswordStorage.VerifyPassword(password, hash)) {
                 Console.WriteLine("Correct password: FAIL");
                 failure = true;
             }
@@ -75,12 +75,12 @@ class Test
 
     private static void testHashFunctionChecking()
     {
-        string hash = PasswordHash.CreateHash("foobar");
+        string hash = PasswordStorage.CreateHash("foobar");
         hash = hash.Replace("sha1:", "sha256:");
 
         bool raised = false;
         try {
-            PasswordHash.ValidatePassword("foobar", hash);
+            PasswordStorage.VerifyPassword("foobar", hash);
         } catch (CannotPerformOperationException) {
             raised = true;
         }

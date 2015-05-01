@@ -29,5 +29,5 @@
 require_once 'PasswordHash.php';
 
 $testPassword = "DefuseDABomb!";
-echo $testPassword . " " . PasswordStorage::create_verifier($testPassword) . "\n";
+echo $testPassword . " " . PasswordStorage::create_hash($testPassword) . "\n";
 

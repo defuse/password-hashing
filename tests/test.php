@@ -59,10 +59,10 @@ function test()
         $all_tests_pass = false;
     }
 
-    $hash = PasswordStorage::create_verifier("correct_password");
+    $hash = PasswordStorage::create_hash("correct_password");
 
     // Right password returns true.
-    $result = PasswordStorage::validate_password("correct_password", $hash);
+    $result = PasswordStorage::verify_password("correct_password", $hash);
     if ($result === TRUE)
     {
         echo "Correct password: pass\n";
@@ -74,7 +74,7 @@ function test()
     }
 
     // Wrong password returns false.
-    $result = PasswordStorage::validate_password("wrong_password", $hash);
+    $result = PasswordStorage::verify_password("wrong_password", $hash);
     if ($result === FALSE)
     {
         echo "Wrong password: pass\n";
@@ -85,11 +85,11 @@ function test()
         $all_tests_pass = false;
     }
     
-    // Bad verifier raises InvalidVerifierException
+    // Bad hash raises InvalidHashException
     $raised = false;
     try {
-        $result = PasswordStorage::validate_password("password", "");
-    } catch (InvalidVerifierException $ex) { $raised = true; }
+        $result = PasswordStorage::verify_password("password", "");
+    } catch (InvalidHashException $ex) { $raised = true; }
     if ($raised) {
         echo "Bad hash: pass\n";
     } else {
@@ -97,7 +97,7 @@ function test()
         $all_tests_pass = false;
     }
 
-    // Make sure truncated hashes don't validate.
+    // Make sure truncated hashes don't verify.
     $badHashLength = strlen($hash);
     $truncateTest = true;
 
@@ -106,8 +106,8 @@ function test()
         $badHash = substr($hash, 0, $badHashLength);
         $raised = false;
         try {
-            $badResult = PasswordStorage::validate_password("correct_password", $badHash);
-        } catch (InvalidVerifierException $ex) { $raised = true; }
+            $badResult = PasswordStorage::verify_password("correct_password", $badHash);
+        } catch (InvalidHashException $ex) { $raised = true; }
 
         if (!$raised) {
             echo "Truncated hash test: FAIL " . 
@@ -128,9 +128,9 @@ function test()
     }
 
     // Make sure changing the algorithm breaks the hash.
-    $hash = PasswordStorage::create_verifier("foobar");
+    $hash = PasswordStorage::create_hash("foobar");
     $hash = str_replace("sha1:", "sha256:", $hash);
-    if (PasswordStorage::validate_password("foobar", $hash) === FALSE) {
+    if (PasswordStorage::verify_password("foobar", $hash) === FALSE) {
         echo "Algorithm swap: pass\n";
     } else {
         echo "Algorithm swap: FAIL\n";

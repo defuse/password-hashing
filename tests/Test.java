@@ -15,7 +15,7 @@ public class Test
         int badHashLength = 0;
 
         try {
-            goodHash = PasswordHash.createHash(userString);
+            goodHash = PasswordStorage.createHash(userString);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.exit(1);
@@ -28,8 +28,8 @@ public class Test
 
             boolean raised = false;
             try {
-                PasswordHash.validatePassword(userString, badHash);
-            } catch (PasswordHash.InvalidVerifierException ex) {
+                PasswordStorage.verifyPassword(userString, badHash);
+            } catch (PasswordStorage.InvalidHashException ex) {
                 raised = true;
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
@@ -53,7 +53,7 @@ public class Test
     }
 
     /**
-     * Tests the basic functionality of the PasswordHash class
+     * Tests the basic functionality of the PasswordStorage class
      *
      * @param   args        ignored
      */
@@ -66,18 +66,18 @@ public class Test
             for(int i = 0; i < 10; i++)
             {
                 String password = ""+i;
-                String hash = PasswordHash.createHash(password);
-                String secondHash = PasswordHash.createHash(password);
+                String hash = PasswordStorage.createHash(password);
+                String secondHash = PasswordStorage.createHash(password);
                 if(hash.equals(secondHash)) {
                     System.out.println("FAILURE: TWO HASHES ARE EQUAL!");
                     failure = true;
                 }
                 String wrongPassword = ""+(i+1);
-                if(PasswordHash.validatePassword(wrongPassword, hash)) {
+                if(PasswordStorage.verifyPassword(wrongPassword, hash)) {
                     System.out.println("FAILURE: WRONG PASSWORD ACCEPTED!");
                     failure = true;
                 }
-                if(!PasswordHash.validatePassword(password, hash)) {
+                if(!PasswordStorage.verifyPassword(password, hash)) {
                     System.out.println("FAILURE: GOOD PASSWORD NOT ACCEPTED!");
                     failure = true;
                 }
@@ -97,13 +97,13 @@ public class Test
     public static void testHashFunctionChecking()
     {
         try {
-            String hash = PasswordHash.createHash("foobar");
+            String hash = PasswordStorage.createHash("foobar");
             hash = hash.replaceFirst("sha1:", "sha256:");
 
             boolean raised = false;
             try {
-                PasswordHash.validatePassword("foobar", hash);
-            } catch (PasswordHash.CannotPerformOperationException ex) {
+                PasswordStorage.verifyPassword("foobar", hash);
+            } catch (PasswordStorage.CannotPerformOperationException ex) {
                 raised = true;
             }
 

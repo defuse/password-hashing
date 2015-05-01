@@ -20,10 +20,10 @@ class CSharpAndPHPCompatibility
     private static void testCSharpHashes()
     {
         string userPW = "RedragonX!";
-        string goodHash = PasswordHash.CreateHash(userPW);
+        string goodHash = PasswordStorage.CreateHash(userPW);
 
         // Good password.
-        string args = "tests/phpValidate.php" + " " + userPW + " " + goodHash;
+        string args = "tests/phpVerify.php" + " " + userPW + " " + goodHash;
         CommandExecResult goodHashExecution = RunCommand("php", args);
         if (goodHashExecution.exitCode == 0)
         {
@@ -36,7 +36,7 @@ class CSharpAndPHPCompatibility
         }
 
         // Bad password.
-        args = "tests/phpValidate.php" + " " + "wrongPassword" + " " + goodHash;
+        args = "tests/phpVerify.php" + " " + "wrongPassword" + " " + goodHash;
         CommandExecResult badHashExecution = RunCommand("php", args);
         if (badHashExecution.exitCode == 0)
         {
@@ -57,7 +57,7 @@ class CSharpAndPHPCompatibility
         // Good password.
         CommandExecResult goodHashExecution = RunCommand("php", "tests/phpHashMaker.php");
         testData = goodHashExecution.stdOut.Split(useDelimiter);
-        if (PasswordHash.ValidatePassword(testData[0], testData[1]))
+        if (PasswordStorage.VerifyPassword(testData[0], testData[1]))
         {
             Console.WriteLine("PHP hash validating in C#: pass");
         }
@@ -70,7 +70,7 @@ class CSharpAndPHPCompatibility
         // Bad password.
         CommandExecResult badHashExecution = RunCommand("php", "tests/phpHashMaker.php");
         testData = badHashExecution.stdOut.Split(useDelimiter);
-        if (PasswordHash.ValidatePassword("wrongPassword", testData[1]))
+        if (PasswordStorage.VerifyPassword("wrongPassword", testData[1]))
         {
             Console.WriteLine("The C# implementation accepts BAD PHP hashes: FAIL");
             System.Environment.Exit(1);

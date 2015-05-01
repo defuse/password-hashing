@@ -21,13 +21,13 @@ public class JavaAndPHPCompatibility {
         String javaHash = "";
 
         try {
-            javaHash = PasswordHash.createHash(password);
+            javaHash = PasswordStorage.createHash(password);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.exit(1);
         }
 
-        if (phpValidate(password, javaHash)) {
+        if (phpVerify(password, javaHash)) {
             System.out.println("Java hash validating in PHP: pass");
         } else {
             System.out.println("Java hash validating in PHP: FAIL");
@@ -41,13 +41,13 @@ public class JavaAndPHPCompatibility {
         String javaHash = "";
 
         try {
-            javaHash = PasswordHash.createHash(password);
+            javaHash = PasswordStorage.createHash(password);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.exit(1);
         }
 
-        if (phpValidate("wrongPassword", javaHash) == false) {
+        if (phpVerify("wrongPassword", javaHash) == false) {
             System.out.println("Java hash validating bad password in PHP: pass");
         } else {
             System.out.println("Java hash validating bad password in PHP: FAIL");
@@ -59,7 +59,7 @@ public class JavaAndPHPCompatibility {
     {
         PasswordHashPair pair = getPHPHash();
         try {
-            if (PasswordHash.validatePassword(pair.password, pair.hash)) {
+            if (PasswordStorage.verifyPassword(pair.password, pair.hash)) {
                 System.out.println("PHP hash validating in Java: pass");
             } else {
                 System.out.println("PHP hash validating in Java: FAIL");
@@ -75,7 +75,7 @@ public class JavaAndPHPCompatibility {
     {
         PasswordHashPair pair = getPHPHash();
         try {
-            if (!PasswordHash.validatePassword("wrongPassword", pair.hash)) {
+            if (!PasswordStorage.verifyPassword("wrongPassword", pair.hash)) {
                 System.out.println("PHP hash validating bad password in Java: pass");
             } else {
                 System.out.println("PHP hash validating bad password in Java: FAIL");
@@ -87,12 +87,12 @@ public class JavaAndPHPCompatibility {
         }
     }
 
-    private static boolean phpValidate(String password, String hash)
+    private static boolean phpVerify(String password, String hash)
     {
         Process phpTest = null;
         ProcessBuilder pb = new ProcessBuilder(
             "php",
-            "tests/phpValidate.php",
+            "tests/phpVerify.php",
             password,
             hash
         );

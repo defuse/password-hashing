@@ -32,12 +32,12 @@ using System.Security.Cryptography;
 
 namespace PasswordSecurity
 {
-    class InvalidVerifierException : Exception
+    class InvalidHashException : Exception
     {
-        public InvalidVerifierException() { }
-        public InvalidVerifierException(string message)
+        public InvalidHashException() { }
+        public InvalidHashException(string message)
             : base(message) { }
-        public InvalidVerifierException(string message, Exception inner)
+        public InvalidHashException(string message, Exception inner)
             : base(message, inner) { }
     }
 
@@ -50,9 +50,10 @@ namespace PasswordSecurity
             : base(message, inner) { }
     }
 
-    class PasswordHash
+    class PasswordStorage
     {
-        // The following constants may be changed without breaking existing hashes.
+        // The following constants may be changed without breaking existing
+        // hashes.
         public const int SALT_BYTES = 24;
         public const int HASH_BYTES = 18;
         public const int PBKDF2_ITERATIONS = 32000;
@@ -83,7 +84,6 @@ namespace PasswordSecurity
                 );
             }
 
-            // Hash the password and encode the parameters
             byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTES);
 
             // format: algorithm:iterations:hashSize:salt:hash
@@ -98,19 +98,18 @@ namespace PasswordSecurity
             return parts;
         }
 
-        public static bool ValidatePassword(string password, string goodHash)
+        public static bool VerifyPassword(string password, string goodHash)
         {
-            // Extract the parameters from the hash
             char[] delimiter = { ':' };
             string[] split = goodHash.Split(delimiter);
 
             if (split.Length != HASH_SECTIONS) {
-                throw new InvalidVerifierException(
-                    "Fields are missing from the password verifier."
+                throw new InvalidHashException(
+                    "Fields are missing from the password hash."
                 );
             }
 
-            // Currently, we only support SHA1 with C#.
+            // We only support SHA1 with C#.
             if (split[HASH_ALGORITHM_INDEX] != "sha1") {
                 throw new CannotPerformOperationException(
                     "Unsupported hash type."
@@ -126,19 +125,19 @@ namespace PasswordSecurity
                     ex
                 );
             } catch (FormatException ex) {
-                throw new InvalidVerifierException(
+                throw new InvalidHashException(
                     "Could not parse the iteration count as an integer.",
                     ex
                 );
             } catch (OverflowException ex) {
-                throw new InvalidVerifierException(
+                throw new InvalidHashException(
                     "The iteration count is too large to be represented.",
                     ex
                 );
             }
 
             if (iterations < 1) {
-                throw new InvalidVerifierException(
+                throw new InvalidHashException(
                     "Invalid number of iterations. Must be >= 1."
                 );
             }
@@ -153,7 +152,7 @@ namespace PasswordSecurity
                     ex
                 );
             } catch (FormatException ex) {
-                throw new InvalidVerifierException(
+                throw new InvalidHashException(
                     "Base64 decoding of salt failed.",
                     ex
                 );
@@ -169,7 +168,7 @@ namespace PasswordSecurity
                     ex
                 );
             } catch (FormatException ex) {
-                throw new InvalidVerifierException(
+                throw new InvalidHashException(
                     "Base64 decoding of pbkdf2 output failed.",
                     ex
                 );
@@ -184,19 +183,19 @@ namespace PasswordSecurity
                     ex
                 );
             } catch (FormatException ex) {
-                throw new InvalidVerifierException(
+                throw new InvalidHashException(
                     "Could not parse the hash size as an integer.",
                     ex
                 );
             } catch (OverflowException ex) {
-                throw new InvalidVerifierException(
+                throw new InvalidHashException(
                     "The hash size is too large to be represented.",
                     ex
                 );
             }
 
             if (storedHashSize != hash.Length) {
-                throw new InvalidVerifierException(
+                throw new InvalidHashException(
                     "Hash length doesn't match stored hash length."
                 );
             }

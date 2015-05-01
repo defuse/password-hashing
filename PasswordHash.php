@@ -27,25 +27,25 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// These constants may be changed without breaking existing verifiers.
+// These constants may be changed without breaking existing hashes.
 define("PBKDF2_HASH_ALGORITHM", "sha1");
 define("PBKDF2_ITERATIONS", 32000);
 define("PBKDF2_SALT_BYTES", 24);
 define("PBKDF2_OUTPUT_BYTES", 18);
 
-define("VERIFIER_SECTIONS", 5);
-define("VERIFIER_ALGORITHM_INDEX", 0);
-define("VERIFIER_ITERATION_INDEX", 1);
-define("VERIFIER_SIZE_INDEX", 2);
-define("VERIFIER_SALT_INDEX", 3);
-define("VERIFIER_PBKDF2_INDEX", 4);
+define("HASH_SECTIONS", 5);
+define("HASH_ALGORITHM_INDEX", 0);
+define("HASH_ITERATION_INDEX", 1);
+define("HASH_SIZE_INDEX", 2);
+define("HASH_SALT_INDEX", 3);
+define("HASH_PBKDF2_INDEX", 4);
 
-class InvalidVerifierException extends Exception {}
+class InvalidHashException extends Exception {}
 class CannotPerformOperationException extends Exception {}
 
 class PasswordStorage {
 
-    public static function create_verifier($password)
+    public static function create_hash($password)
     {
         // format: algorithm:iterations:outputSize:salt:pbkdf2output
         $salt_raw = mcrypt_create_iv(PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM);
@@ -75,39 +75,39 @@ class PasswordStorage {
             base64_encode($PBKDF2_Output);
     }
     
-    public static function validate_password($password, $verifier)
+    public static function verify_password($password, $hash)
     {
-        $params = explode(":", $verifier);
-        if(count($params) != VERIFIER_SECTIONS) {
-            throw new InvalidVerifierException(
-                "Fields are missing from the password verifier."
+        $params = explode(":", $hash);
+        if(count($params) != HASH_SECTIONS) {
+            throw new InvalidHashException(
+                "Fields are missing from the password hash."
             );
         }
 
-        $pbkdf2 = base64_decode($params[VERIFIER_PBKDF2_INDEX], true);
+        $pbkdf2 = base64_decode($params[HASH_PBKDF2_INDEX], true);
         if ($pbkdf2 === false) {
-            throw new InvalidVerifierException(
+            throw new InvalidHashException(
                 "Base64 decoding of pbkdf2 output failed."
             );
         }
 
-        $salt_raw = base64_decode($params[VERIFIER_SALT_INDEX], true);
+        $salt_raw = base64_decode($params[HASH_SALT_INDEX], true);
         if ($salt_raw === false) {
-            throw new InvalidVerifierException(
+            throw new InvalidHashException(
                 "Base64 decoding of salt failed."
             );
         }
 
-        $storedOutputSize = (int)$params[VERIFIER_SIZE_INDEX];
+        $storedOutputSize = (int)$params[HASH_SIZE_INDEX];
         if (strlen($pbkdf2) !== $storedOutputSize) {
-            throw new InvalidVerifierException(
+            throw new InvalidHashException(
                 "PBKDF2 output length doesn't match stored output length."
             );
         }
 
-        $iterations = (int)$params[VERIFIER_ITERATION_INDEX];
+        $iterations = (int)$params[HASH_ITERATION_INDEX];
         if ($iterations < 1) {
-            throw new InvalidVerifierException(
+            throw new InvalidHashException(
                 "Invalid number of iterations. Must be >= 1."
             );
         }
@@ -115,7 +115,7 @@ class PasswordStorage {
         return self::slow_equals(
             $pbkdf2,
             self::pbkdf2(
-                $params[VERIFIER_ALGORITHM_INDEX],
+                $params[HASH_ALGORITHM_INDEX],
                 $password,
                 $salt_raw,
                 $iterations,

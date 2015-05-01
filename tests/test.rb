@@ -9,7 +9,7 @@ module Test
 
   def self.truncatedHashTest
     userString = "awesomeBooks!"
-    hash = PasswordStorage.createVerifier( userString )
+    hash = PasswordStorage.createHash( userString )
     badHashLength = hash.length
 
     loop do
@@ -18,8 +18,8 @@ module Test
 
       raised = false
       begin
-        PasswordStorage.validatePassword( userString, badHash )
-      rescue InvalidVerifierError
+        PasswordStorage.verifyPassword( userString, badHash )
+      rescue InvalidHashError
         raised = true
       end
 
@@ -34,11 +34,11 @@ module Test
   end
 
   def self.testHashFunctionChecking
-    hash = PasswordStorage.createVerifier("foobar")
+    hash = PasswordStorage.createHash("foobar")
     hash = hash.sub("sha1:", "sha256:")
     raised = false
     begin
-      PasswordStorage.validatePassword("foobar", hash)
+      PasswordStorage.verifyPassword("foobar", hash)
     rescue CannotPerformOperationException
       raised = true
     end

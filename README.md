@@ -11,15 +11,15 @@ Usage
 ------
 
 This library provides two methods: `CreateHash`, and `ValidatePassword`. The
-`CreateHash` method takes a password as input and returns a verifier string that
+`CreateHash` method takes a password as input and returns a "hash" string that
 can be used to check if a password matches the one that was given to
-`CreateHash`. The `ValidatePassword` method takes a verifier string and
-a candidate password, and returns true if the candidate password is the same as
-the one that was originally given to `CreateHash`.
+`CreateHash`. The `ValidatePassword` method takes a hash string and a candidate
+password, and returns true if the candidate password is the same as the one that
+was originally given to `CreateHash`.
 
 The library takes care of salting internally, so the user of this library does
 not need to manually add salt or worry about storing the salt. The salt is
-encoded into the verifier string.
+encoded into the hash string.
 
 The different implementations are compatibile with each other. So a hash
 produced with one implementation can later be used to verify the password in
@@ -28,23 +28,23 @@ a different one.
 ### Creating a Hash
 
 When a user account is created, store their username and their password's
-verifier string into the database:
+hash string into the database:
 
     User Registers for Account (username, password):
         Ensure username does not already exist in the database.
-        verifier = CreateHash(password)
+        hash = CreateHash(password)
         If CreateHash threw an exception, stop and alert a human.
-        Store (username, verifier) in the database.
+        Store (username, hash) in the database.
 
 ### Validating a Password
 
-When a user attempts to log in, retrieve the password verifier from the database
+When a user attempts to log in, retrieve the password hash from the database
 and use it to check if the password is correct:
 
     User Attempts to Log in (username, password):
-        Look up (username, verifier) in the database.
+        Look up (username, hash) in the database.
         If no record is found for the given username, return false.
-        If ValidatePassword(password, verifier) is true:
+        If ValidatePassword(password, hash) is true:
             The password is correct. Return true.
         Otherwise, if it is false:
             The password is wrong. Return false.
@@ -58,7 +58,7 @@ your code is secure, it will always catch these exceptions and deal with them.
 If either of these exceptions are thrown, it is usually indicative of something
 being *seriously* wrong, so a human should be alerted whenever they are.
 
-- `InvalidVerifierException`: The password verifier was corrupted or changed
+- `InvalidHashException`: The password hash was corrupted or changed
   between when it was returned by `CreateHash` and passed to `ValidatePassword`.
   If this happens, it could mean your database is configured incorrectly, or the
   code that inserts and retrieves from the database is wrong.
@@ -96,9 +96,9 @@ change these if you know what you are doing, and have help from an expert**:
   unnecessary PBKDF2 overhead), and (2) A multiple of 6 bits, so that the base64
   encoding is optimal.
 
-Note that these constants are encoded into the verifier string when it is
-created with `CreateHash` so that they can be changed without breaking existing
-hashes. The new (changed) values will apply only to newly-created hashes.
+Note that these constants are encoded into the hash string when it is created
+with `CreateHash` so that they can be changed without breaking existing hashes.
+The new (changed) values will apply only to newly-created hashes.
 
 More Information
 -----------------

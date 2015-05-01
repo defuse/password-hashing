@@ -34,7 +34,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import javax.xml.bind.DatatypeConverter;
 
-public class PasswordHash
+public class PasswordStorage
 {
 
     @SuppressWarnings("serial")

@@ -28,7 +28,7 @@ require 'securerandom'
 require 'openssl'
 require 'base64'
 
-class InvalidVerifierError < StandardError
+class InvalidHashError < StandardError
 end
 
 class CannotPerformOperationException < StandardError
@@ -39,20 +39,20 @@ end
 # www: http://crackstation.net/hashing-security.htm
 module PasswordStorage
 
-  # The following constants can be changed without breaking existing verifiers.
+  # The following constants can be changed without breaking existing hashes.
   PBKDF2_ITERATIONS = 32000
   PBKDF2_SALT_BYTES = 24
   PBKDF2_OUTPUT_BYTES = 18
 
   SECTION_DELIMITER = ':'
-  VERIFIER_SECTIONS = 5
-  VERIFIER_ALGORITHM_INDEX = 0
-  VERIFIER_ITERATIONS_INDEX = 1
-  VERIFIER_SIZE_INDEX = 2
-  VERIFIER_SALT_INDEX = 3
-  VERIFIER_PBKDF2_INDEX = 4
+  HASH_SECTIONS = 5
+  HASH_ALGORITHM_INDEX = 0
+  HASH_ITERATIONS_INDEX = 1
+  HASH_SIZE_INDEX = 2
+  HASH_SALT_INDEX = 3
+  HASH_PBKDF2_INDEX = 4
 
-  def self.createVerifier( password )
+  def self.createHash( password )
     begin
       salt = SecureRandom.random_bytes( PBKDF2_SALT_BYTES )
     rescue NotImplementedError
@@ -79,46 +79,46 @@ module PasswordStorage
     return parts.join( SECTION_DELIMITER )
   end
 
-  def self.validatePassword( password, verifier )
-    params = verifier.split( SECTION_DELIMITER )
+  def self.verifyPassword( password, hash )
+    params = hash.split( SECTION_DELIMITER )
 
-    if params.length != VERIFIER_SECTIONS
-      raise InvalidVerifierError.new(
-        "Fields are missing from the password verifier."
+    if params.length != HASH_SECTIONS
+      raise InvalidHashError.new(
+        "Fields are missing from the password hash."
       )
     end
 
-    if params[VERIFIER_ALGORITHM_INDEX] != "sha1"
+    if params[HASH_ALGORITHM_INDEX] != "sha1"
       raise CannotPerformOperationException.new(
         "Unsupported hash type."
       )
     end
 
     begin
-      pbkdf2 = Base64.strict_decode64( params[VERIFIER_PBKDF2_INDEX] )
+      pbkdf2 = Base64.strict_decode64( params[HASH_PBKDF2_INDEX] )
     rescue ArgumentError
-      raise InvalidVerifierError.new(
+      raise InvalidHashError.new(
         "Base64 decoding of pbkdf2 output failed."
       )
     end
 
     begin
-      salt = Base64.strict_decode64( params[VERIFIER_SALT_INDEX] )
+      salt = Base64.strict_decode64( params[HASH_SALT_INDEX] )
     rescue
-      raise InvalidVerifierError.new(
+      raise InvalidHashError.new(
         "Base64 decoding of salt failed."
       )
     end
 
-    if pbkdf2.bytesize() != params[VERIFIER_SIZE_INDEX].to_i
-      raise InvalidVerifierError.new(
+    if pbkdf2.bytesize() != params[HASH_SIZE_INDEX].to_i
+      raise InvalidHashError.new(
         "PBKDF2 output length doesn't match stored output length."
       )
     end
 
-    iterations = params[VERIFIER_ITERATIONS_INDEX].to_i
+    iterations = params[HASH_ITERATIONS_INDEX].to_i
     if iterations < 1
-      raise InvalidVerifierError.new(
+      raise InvalidHashError.new(
         "Invalid number of iterations. Must be >= 1."
       )
     end
@@ -143,23 +143,23 @@ module PasswordStorage
   end
 
   def self.runSelfTests
-    puts "Sample verifiers:"
-    3.times { puts createVerifier("password") }
+    puts "Sample hashes:"
+    3.times { puts createHash("password") }
 
     puts "\nRunning Ruby self tests..."
     @@allPass = true
 
     correctPassword = 'aaaaaaaaaa'
     wrongPassword = 'aaaaaaaaab'
-    verifier = createVerifier(correctPassword)
+    hash = createHash(correctPassword)
 
-    assert( validatePassword( correctPassword, verifier ) == true, "correct password" )
-    assert( validatePassword( wrongPassword, verifier ) == false, "wrong password" )
+    assert( verifyPassword( correctPassword, hash ) == true, "correct password" )
+    assert( verifyPassword( wrongPassword, hash ) == false, "wrong password" )
 
-    h1 = verifier.split( SECTION_DELIMITER )
-    h2 = createVerifier( correctPassword ).split( SECTION_DELIMITER )
-    assert( h1[VERIFIER_PBKDF2_INDEX] != h2[VERIFIER_PBKDF2_INDEX], "different verifier" )
-    assert( h1[VERIFIER_SALT_INDEX] != h2[VERIFIER_SALT_INDEX], "different salt" )
+    h1 = hash.split( SECTION_DELIMITER )
+    h2 = createHash( correctPassword ).split( SECTION_DELIMITER )
+    assert( h1[HASH_PBKDF2_INDEX] != h2[HASH_PBKDF2_INDEX], "different hash" )
+    assert( h1[HASH_SALT_INDEX] != h2[HASH_SALT_INDEX], "different salt" )
 
     if @@allPass
       puts "*** ALL TESTS PASS ***"
