@@ -38,11 +38,11 @@ public class PasswordHash
 {
 
     @SuppressWarnings("serial")
-    static public class InvalidVerifierException extends Exception {
-        public InvalidVerifierException(String message) {
+    static public class InvalidHashException extends Exception {
+        public InvalidHashException(String message) {
             super(message);
         }
-        public InvalidVerifierException(String message, Throwable source) {
+        public InvalidHashException(String message, Throwable source) {
             super(message, source);
         }
     }
@@ -59,7 +59,8 @@ public class PasswordHash
 
     public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
 
-    // The following constants may be changed without breaking existing hashes.
+    // The following constants may be changed without breaking existing
+    // hashes.
     public static final int SALT_BYTE_SIZE = 24;
     public static final int HASH_BYTE_SIZE = 18;
     public static final int PBKDF2_ITERATIONS = 32000;
@@ -100,20 +101,20 @@ public class PasswordHash
         return parts;
     }
 
-    public static boolean validatePassword(String password, String correctHash)
-        throws CannotPerformOperationException, InvalidVerifierException
+    public static boolean verifyPassword(String password, String correctHash)
+        throws CannotPerformOperationException, InvalidHashException
     {
-        return validatePassword(password.toCharArray(), correctHash);
+        return verifyPassword(password.toCharArray(), correctHash);
     }
 
-    public static boolean validatePassword(char[] password, String correctHash)
-        throws CannotPerformOperationException, InvalidVerifierException
+    public static boolean verifyPassword(char[] password, String correctHash)
+        throws CannotPerformOperationException, InvalidHashException
     {
         // Decode the hash into its parameters
         String[] params = correctHash.split(":");
         if (params.length != HASH_SECTIONS) {
-            throw new InvalidVerifierException(
-                "Fields are missing from the password verifier."
+            throw new InvalidHashException(
+                "Fields are missing from the password hash."
             );
         }
 
@@ -128,14 +129,14 @@ public class PasswordHash
         try {
             iterations = Integer.parseInt(params[ITERATION_INDEX]);
         } catch (NumberFormatException ex) {
-            throw new InvalidVerifierException(
+            throw new InvalidHashException(
                 "Could not parse the iteration count as an integer.",
                 ex
             );
         }
 
         if (iterations < 1) {
-            throw new InvalidVerifierException(
+            throw new InvalidHashException(
                 "Invalid number of iterations. Must be >= 1."
             );
         }
@@ -145,7 +146,7 @@ public class PasswordHash
         try {
             salt = fromBase64(params[SALT_INDEX]);
         } catch (IllegalArgumentException ex) {
-            throw new InvalidVerifierException(
+            throw new InvalidHashException(
                 "Base64 decoding of salt failed.",
                 ex
             );
@@ -155,7 +156,7 @@ public class PasswordHash
         try {
             hash = fromBase64(params[PBKDF2_INDEX]);
         } catch (IllegalArgumentException ex) {
-            throw new InvalidVerifierException(
+            throw new InvalidHashException(
                 "Base64 decoding of pbkdf2 output failed.",
                 ex
             );
@@ -166,14 +167,14 @@ public class PasswordHash
         try {
             storedHashSize = Integer.parseInt(params[HASH_SIZE_INDEX]);
         } catch (NumberFormatException ex) {
-            throw new InvalidVerifierException(
+            throw new InvalidHashException(
                 "Could not parse the hash size as an integer.",
                 ex
             );
         }
 
         if (storedHashSize != hash.length) {
-            throw new InvalidVerifierException(
+            throw new InvalidHashException(
                 "Hash length doesn't match stored hash length."
             );
         }
