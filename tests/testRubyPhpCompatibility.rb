@@ -5,7 +5,7 @@ module TestRubyAndPhpCompatiblity
     userString = "RedragonX!"
     rubyHash = PasswordStorage.createHash( userString )
 
-    result = system(*["php", "tests/phpVerify.php", userString, rubyHash])
+    result = system(*["php", "./tests/phpVerify.php", userString, rubyHash])
     # System returns true if zero, false if non-zero exit status.
     if result
       puts 'Ruby hash validating in PHP: pass'
@@ -16,7 +16,7 @@ module TestRubyAndPhpCompatiblity
 
     # Test an incorrect password too
     badPassword = "badpw"
-    result = system(*["php", "tests/phpVerify.php", badPassword, rubyHash])
+    result = system(*["php", "./tests/phpVerify.php", badPassword, rubyHash])
     if result == false
       puts "Ruby hash validating bad password in PHP: pass"
     else
@@ -26,7 +26,7 @@ module TestRubyAndPhpCompatiblity
   end
 
   def self.testPHPHash()
-    testData = `php tests/phpHashMaker.php`
+    testData = `php ./tests/phpHashMaker.php`
     testData = testData.split(' ')
 
     testPw = testData[0]

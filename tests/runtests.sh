@@ -52,16 +52,14 @@ java Test
 if [ $? -ne 0 ]; then
     echo "FAIL."
     # Cleanup
-    rm Test.class
     rm PasswordStorage.java
-    rm PasswordStorage.class
+    rm *.class
     cd ..
     exit 1
 fi
 # Cleanup
 rm ./PasswordStorage.java
-rm ./PasswordStorage.class
-rm ./Test.class
+rm *.class
 cd ..
 echo "---------------------------------------------"
 echo ""
@@ -86,16 +84,14 @@ java JavaAndPHPCompatibility
 if [ $? -ne 0 ]; then
     echo "FAIL."
     # Cleanup
-    rm JavaAndPHPCompatibility.class
     rm PasswordStorage.java
-    rm PasswordStorage.class
+    rm *.class
     cd ..
     exit 1
 fi
 # Cleanup
 rm ./PasswordStorage.java
-rm ./PasswordStorage.class
-rm ./JavaAndPHPCompatibility.class
+rm *.class
 cd ..
 echo "---------------------------------------------"
 echo ""
