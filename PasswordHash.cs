@@ -57,15 +57,16 @@ namespace PasswordHash
         public static string CreateHash(string password)
         {
             // Generate a random salt
-            RNGCryptoServiceProvider csprng = new RNGCryptoServiceProvider();
-            byte[] salt = new byte[SALT_BYTE_SIZE];
-            csprng.GetBytes(salt);
+            using (RNGCryptoServiceProvider csprng = new RNGCryptoServiceProvider()) {
+	            byte[] salt = new byte[SALT_BYTE_SIZE];
+	            csprng.GetBytes(salt);
 
-            // Hash the password and encode the parameters
-            byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
-            return PBKDF2_ITERATIONS + ":" +
-                Convert.ToBase64String(salt) + ":" +
-                Convert.ToBase64String(hash);
+	            // Hash the password and encode the parameters
+	            byte[] hash = PBKDF2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
+	            return PBKDF2_ITERATIONS + ":" +
+	                Convert.ToBase64String(salt) + ":" +
+	                Convert.ToBase64String(hash);
+            }
         }
 
         /// <summary>
@@ -113,9 +114,10 @@ namespace PasswordHash
         /// <returns>A hash of the password.</returns>
         private static byte[] PBKDF2(string password, byte[] salt, int iterations, int outputBytes)
         {
-            Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, salt);
-            pbkdf2.IterationCount = iterations;
-            return pbkdf2.GetBytes(outputBytes);
+            using (Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, salt)) {
+	            pbkdf2.IterationCount = iterations;
+	            return pbkdf2.GetBytes(outputBytes);
+        	}
         }
     }
 } 
