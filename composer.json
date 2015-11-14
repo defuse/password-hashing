@@ -4,6 +4,7 @@
     "description": "Adds composer.json for compatibilty with composer www.getcomposer.org",
     "type": "library",
     "minimum-stability": "stable",
+    "prefer-stable": true,
     "require": {
         "php": ">=5.3.0"
     }
