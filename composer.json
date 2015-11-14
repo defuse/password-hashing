@@ -2,6 +2,8 @@
     "name": "thomasoberthanner/password-hashing",
     "version": "1.0",
     "description": "Adds composer.json for compatibilty with composer www.getcomposer.org",
+    "type": "library",
+    "minimum-stability": "stable",
     "require": {
         "php": ">=5.3.0"
     }
