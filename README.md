@@ -2,6 +2,7 @@ password-hashing
 ======
 This fork adds a composer.json file to defuse/password-hashing
 
+Add this to your composer.json:
 ```
 {
     "repositories": [
