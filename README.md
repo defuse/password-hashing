@@ -148,6 +148,14 @@ sha1:64000:18:rxGkJ9fMTNU7ezyWWqS7QBOeYKNUcVYL:tn+Zr/xo99LI+kSwLOUav72X
 sha1:64000:18:lFtd+Qf93yfMyP6chCxJP5nkOxri6Zbh:B0awZ9cDJCTdfxUVwVqO+Mb5
 ```
 
+The hash length in bytes is included to prevent an accident where the hash gets
+truncated. For instance, if the hash were stored in a database column that
+wasn't big enough, and the database was configured to truncate it, the result
+when the hash gets read back would be an easy-to-break hash, since the PBKDF2
+output is right at the end. Therefore, the length of the hash should not be
+determined solely from the length of the last field; it must be compared against
+the stored length.
+
 More Information
 -----------------
 
