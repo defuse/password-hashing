@@ -1,5 +1,5 @@
-Secure Password Storage
-=======================
+Secure Password Storage v2.0
+=============================
 
 [![Build Status](https://travis-ci.org/defuse/password-hashing.svg?branch=compatible-versions)](https://travis-ci.org/defuse/password-hashing)
 
