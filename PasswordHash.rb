@@ -116,46 +116,4 @@ module PasswordStorage
     result == 0
   end
 
-  def self.runSelfTests
-    puts "Sample hashes:"
-    3.times { puts createHash("password") }
-
-    puts "\nRunning Ruby self tests..."
-    @@allPass = true
-
-    correctPassword = 'aaaaaaaaaa'
-    wrongPassword = 'aaaaaaaaab'
-    hash = createHash(correctPassword)
-
-    assert( verifyPassword( correctPassword, hash ) == true, "correct password" )
-    assert( verifyPassword( wrongPassword, hash ) == false, "wrong password" )
-
-    h1 = hash.split( SECTION_DELIMITER )
-    h2 = createHash( correctPassword ).split( SECTION_DELIMITER )
-    assert( h1[HASH_PBKDF2_INDEX] != h2[HASH_PBKDF2_INDEX], "different hash" )
-    assert( h1[HASH_SALT_INDEX] != h2[HASH_SALT_INDEX], "different salt" )
-
-    if @@allPass
-      puts "*** ALL TESTS PASS ***"
-    else
-      puts "*** FAILURES ***"
-    end
-
-    return @@allPass
-  end
-
-  def self.assert( truth, msg )
-    if truth
-      puts "PASS [#{msg}]"
-    else
-      puts "FAIL [#{msg}]"
-      @@allPass = false
-    end
-  end
-
 end
-
-if __FILE__ == $0
-  PasswordStorage.runSelfTests
-end
-

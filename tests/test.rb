@@ -5,6 +5,7 @@ module Test
   def self.runTests
     truncatedHashTest()
     testHashFunctionChecking()
+    testMoreThings()
   end
 
   def self.truncatedHashTest
@@ -48,6 +49,33 @@ module Test
     else
       puts "Algorithm swap: FAIL"
       exit(1)
+    end
+  end
+
+  def self.testMoreThings
+    correctPassword = 'aaaaaaaaaa'
+    wrongPassword = 'aaaaaaaaab'
+    hash = PasswordStorage.createHash(correctPassword)
+
+    assert( PasswordStorage.verifyPassword( correctPassword, hash ) == true, "correct password" )
+    assert( PasswordStorage.verifyPassword( wrongPassword, hash ) == false, "wrong password" )
+
+    h1 = hash.split( PasswordStorage::SECTION_DELIMITER )
+    h2 = PasswordStorage.createHash( correctPassword ).split( PasswordStorage::SECTION_DELIMITER )
+    assert( h1[PasswordStorage::HASH_PBKDF2_INDEX] != h2[PasswordStorage::HASH_PBKDF2_INDEX], "different hash" )
+    assert( h1[PasswordStorage::HASH_SALT_INDEX] != h2[PasswordStorage::HASH_SALT_INDEX], "different salt" )
+
+    puts "More things: pass"
+  rescue RuntimeError => e
+    puts "More things: fail"
+    raise e
+  end
+
+  def self.assert( truth, msg )
+    if truth
+      # do nothing
+    else
+      raise RuntimeError.new("FAILURE: [#{msg}]")
     end
   end
 
