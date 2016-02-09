@@ -5,7 +5,29 @@ Secure Password Storage
 
 This repository containes peer-reviewed libraries for password storage in PHP,
 C#, Ruby, and Java. Passwords are "hashed" with PBKDF2 (32,000 iterations of
-SHA1 by default) using a cryptographically-random salt.
+SHA1 by default) using a cryptographically-random salt. The implementations are
+compatible with each other, so you can, for instance, create a hash in PHP and
+then verify it in C#.
+
+Should you use this code?
+--------------------------
+
+This code uses the PBKDF2 algorithm to protect passwords. Better technologies
+for protecting passwords exist today, like bcrypt, scrypt, or Argon2. Before
+using this code, you should try to find a well-reviewed and carefully-made
+implementation of one of those algorithms for the language that you are using.
+These algorithms are "memory hard," meaning that they don't just need a lot of
+CPU power to compute, they also require a lot of memory (unlike PBKDF2). By
+using a memory hard algorithm, your passwords will be better protected.
+
+One thing you could do would be to use
+[libsodium](https://github.com/jedisct1/libsodium) to [hash your passwords with
+scrypt](https://download.libsodium.org/doc/password_hashing/index.html). It has
+bindings available for many languages.
+
+Since there are better options, this code is now in "maintenance mode." Only
+bugs will be fixed, no new features will be added. It is currently safe to use,
+but using libsodium would be better.
 
 Usage
 ------
