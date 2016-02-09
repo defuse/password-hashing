@@ -3,7 +3,7 @@ sudo: required
 dist: trusty
 before_install:
 - sudo apt-get update -qq
-- sudo apt-get install mono-runtime mono-mcs
+- sudo apt-get -qq install mono-runtime mono-mcs
 php:
     - "5.5"
     - "5.4"
