@@ -122,6 +122,32 @@ Note that these constants are encoded into the hash string when it is created
 with `CreateHash` so that they can be changed without breaking existing hashes.
 The new (changed) values will apply only to newly-created hashes.
 
+Hash Format
+------------
+
+The hash format is five fields separated by the colon (':') character.
+
+```
+algorithm:iterations:hashSize:salt:hash
+```
+
+Where:
+
+- `algorithm` is the name of the cryptographic hash function ("sha1").
+- `iterations` is the number of PBKDF2 iterations ("64000").
+- `hashSize` is the length, in bytes, of the `hash` field (after decoding).
+- `salt` is the salt, base64 encoded.
+- `hash` is the PBKDF2 output, base64 encoded. It must encode `hashSize` bytes.
+
+Here are some example hashes (all of the password "foobar"):
+
+```
+sha1:64000:18:B6oWbvtHvu8qCgoE75wxmvpidRnGzGFt:R1gkPOuVjqIoTulWP1TABS0H
+sha1:64000:18:/GO9XQOPexBFVzRjC9mcOkVEi7ZHQc0/:0mY83V5PvmkkHRR41R1iIhx/
+sha1:64000:18:rxGkJ9fMTNU7ezyWWqS7QBOeYKNUcVYL:tn+Zr/xo99LI+kSwLOUav72X
+sha1:64000:18:lFtd+Qf93yfMyP6chCxJP5nkOxri6Zbh:B0awZ9cDJCTdfxUVwVqO+Mb5
+```
+
 More Information
 -----------------
 
