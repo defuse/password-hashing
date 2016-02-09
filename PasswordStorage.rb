@@ -14,7 +14,7 @@ end
 module PasswordStorage
 
   # The following constants can be changed without breaking existing hashes.
-  PBKDF2_ITERATIONS = 32000
+  PBKDF2_ITERATIONS = 64000
   PBKDF2_SALT_BYTES = 24
   PBKDF2_OUTPUT_BYTES = 18
 

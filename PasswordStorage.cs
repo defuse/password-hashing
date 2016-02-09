@@ -29,7 +29,7 @@ namespace PasswordSecurity
         // hashes.
         public const int SALT_BYTES = 24;
         public const int HASH_BYTES = 18;
-        public const int PBKDF2_ITERATIONS = 32000;
+        public const int PBKDF2_ITERATIONS = 64000;
 
         public const int HASH_SECTIONS = 5;
         public const int HASH_ALGORITHM_INDEX = 0;
