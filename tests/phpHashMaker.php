@@ -26,8 +26,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
-require_once 'PasswordHash.php';
+require_once 'PasswordStorage.php';
 
-$testPassword = "DefuseDABomb!";
+$testPassword = "this_is_a_test_password";
 echo $testPassword . " " . PasswordStorage::create_hash($testPassword) . "\n";
 

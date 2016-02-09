@@ -17,7 +17,7 @@ public class JavaAndPHPCompatibility {
 
     private static void javaGoodHashTest()
     {
-        String password = "RedragonX!";
+        String password = "test_password";
         String javaHash = "";
 
         try {
@@ -37,7 +37,7 @@ public class JavaAndPHPCompatibility {
 
     private static void javaBadHashTest()
     {
-        String password = "RedragonX!";
+        String password = "test_password!";
         String javaHash = "";
 
         try {

@@ -1,3 +1,6 @@
+
+# Authors: Stephen Chavez (dicesoft.net), Taylor Hornby (defuse.ca).
+
 require 'securerandom'
 require 'openssl'
 require 'base64'
@@ -8,9 +11,6 @@ end
 class CannotPerformOperationException < StandardError
 end
 
-# Password storage with PBKDF2-SHA1.
-# Authors: @RedragonX (dicesoft.net), havoc AT defuse.ca 
-# www: http://crackstation.net/hashing-security.htm
 module PasswordStorage
 
   # The following constants can be changed without breaking existing hashes.

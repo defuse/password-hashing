@@ -1,4 +1,4 @@
-require_relative '../PasswordHash.rb'
+require_relative '../PasswordStorage.rb'
 
 module Test
 

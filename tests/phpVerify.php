@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once 'PasswordHash.php';
+require_once 'PasswordStorage.php';
 
 if ($argc != 3 || in_array($argv[1], array('--help', '-help', '-h', '-?'))) {
     echo "Usage: php $argv[0] <password> <hash>\n";

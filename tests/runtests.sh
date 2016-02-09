@@ -23,21 +23,21 @@ echo ""
 echo "C#"
 echo "---------------------------------------------"
 # Compile the C# test files
-cp PasswordHash.cs ./tests
+cp PasswordStorage.cs ./tests
 cd tests
-mcs Test.cs PasswordHash.cs
+mcs Test.cs PasswordStorage.cs
 mono Test.exe
 if [ $? -ne 0 ]; then
     echo "FAIL."
     # Cleanup
     rm Test.exe
-    rm PasswordHash.cs
+    rm PasswordStorage.cs
     cd ..
     exit 1
 fi
 # Cleanup
 rm Test.exe
-rm PasswordHash.cs
+rm PasswordStorage.cs
 cd ..
 echo "---------------------------------------------"
 echo ""
@@ -99,21 +99,21 @@ echo ""
 echo "PHP<->C# Compatibility"
 echo "---------------------------------------------"
 # Compile the C# test files
-cp PasswordHash.cs ./tests
+cp PasswordStorage.cs ./tests
 cd tests
-mcs CSharpAndPHPCompatibility.cs PasswordHash.cs
+mcs CSharpAndPHPCompatibility.cs PasswordStorage.cs
 mono CSharpAndPHPCompatibility.exe
 if [ $? -ne 0 ]; then
     echo "FAIL."
     # Cleanup
     rm CSharpAndPHPCompatibility.exe
-    rm PasswordHash.cs
+    rm PasswordStorage.cs
     cd ..
     exit 1
 fi
 # Cleanup
 rm CSharpAndPHPCompatibility.exe
-rm PasswordHash.cs
+rm PasswordStorage.cs
 cd ..
 echo "---------------------------------------------"
 echo ""

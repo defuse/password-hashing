@@ -19,7 +19,7 @@ class CSharpAndPHPCompatibility
 
     private static void testCSharpHashes()
     {
-        string userPW = "RedragonX!";
+        string userPW = "test_password";
         string goodHash = PasswordStorage.CreateHash(userPW);
 
         // Good password.

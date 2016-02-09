@@ -1,8 +1,8 @@
-require_relative '../PasswordHash.rb'
+require_relative '../PasswordStorage.rb'
 
 module TestRubyAndPhpCompatiblity
   def self.testRubyHash()
-    userString = "RedragonX!"
+    userString = "test_password"
     rubyHash = PasswordStorage.createHash( userString )
 
     result = system(*["php", "./tests/phpVerify.php", userString, rubyHash])
