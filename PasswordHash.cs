@@ -41,10 +41,11 @@ namespace PasswordSecurity
         public static string CreateHash(string password)
         {
             // Generate a random salt
-            RNGCryptoServiceProvider csprng = new RNGCryptoServiceProvider();
             byte[] salt = new byte[SALT_BYTES];
             try {
-                csprng.GetBytes(salt);
+                using (RNGCryptoServiceProvider csprng = new RNGCryptoServiceProvider()) {
+                        csprng.GetBytes(salt);
+                }
             } catch (CryptographicException ex) {
                 throw new CannotPerformOperationException(
                     "Random number generator not available.",
@@ -188,9 +189,10 @@ namespace PasswordSecurity
 
         private static byte[] PBKDF2(string password, byte[] salt, int iterations, int outputBytes)
         {
-            Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, salt);
-            pbkdf2.IterationCount = iterations;
-            return pbkdf2.GetBytes(outputBytes);
+            using (Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, salt)) {
+                pbkdf2.IterationCount = iterations;
+                return pbkdf2.GetBytes(outputBytes);
+            }
         }
     }
 }
