@@ -18,6 +18,7 @@ module PasswordStorage
   PBKDF2_SALT_BYTES = 24
   PBKDF2_OUTPUT_BYTES = 18
 
+  # These constants define the encoding and may not be changed.
   SECTION_DELIMITER = ':'
   HASH_SECTIONS = 5
   HASH_ALGORITHM_INDEX = 0
