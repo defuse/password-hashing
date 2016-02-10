@@ -1,3 +1,4 @@
+<?php
 /* 
  * Password Hashing With PBKDF2 (http://crackstation.net/hashing-security.htm).
  * Copyright (c) 2013, Taylor Hornby
@@ -26,14 +27,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-namespace Test
+require_once 'PasswordStorage.php';
+
+if ($argc != 3 || in_array($argv[1], array('--help', '-help', '-h', '-?'))) {
+    echo "Usage: php $argv[0] <password> <hash>\n";
+    exit(1);
+} else {
+    verifyTestHash($argv[1], $argv[2]);
+}
+
+function verifyTestHash($password, $hash)
 {
-    class Test 
-    {
-        static void Main() 
-        {
-            System.Console.WriteLine("Hello World!");
-        }
+    try {
+        $testResult = PasswordStorage::verify_password($password, $hash);
+    } catch (InvalidHashException $ex) {
+        exit(1);
+    } catch (CannotPerformOperationException $ex) {
+        exit(1);
+    }
+
+    if ($testResult) {
+        exit(0);
+    } else {
+        exit(1);
     }
 }
+
+?>

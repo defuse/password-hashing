@@ -26,16 +26,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
+require_once 'PasswordStorage.php';
 
-require_once('PasswordHash.php');
+// At the end is "WHITE SMILING FACE", in UTF-8, which fits into a single UTF-16
+// character, allowing implementations to compare against the length.
+$testPassword = "password\xE2\x98\xBA";
+$length = mb_strlen($testPassword, 'UTF-8');
+echo $length . " ".  $testPassword . " " . PasswordStorage::create_hash($testPassword) . "\n";
 
-for ($i = 0; $i <= 24; $i++) {
-    $iters = (int)pow(2, $i);
-    $start = microtime(true);
-    pbkdf2("sha256", "password".$i, "salt".$i, $iters, 16, true);
-    $end = microtime(true);
-    $seconds = $end - $start;
-    printf("%10d iterations: %f seconds\n", $iters, $seconds);
-}
-
-?>
