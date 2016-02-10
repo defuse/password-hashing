@@ -59,10 +59,12 @@ function test()
         $all_tests_pass = false;
     }
 
-    $hash = PasswordStorage::create_hash("correct_password");
+    $correct_password = "correct_password";
+
+    $hash = PasswordStorage::create_hash($correct_password);
 
     // Right password returns true.
-    $result = PasswordStorage::verify_password("correct_password", $hash);
+    $result = PasswordStorage::verify_password($correct_password, $hash);
     if ($result === TRUE)
     {
         echo "Correct password: pass\n";
@@ -71,6 +73,15 @@ function test()
     {
         echo "Correct password: FAIL\n";
         $all_tests_pass = false;
+    }
+
+    // Same password doesn't create the same hash.
+    $hash2 = PasswordStorage::create_hash($correct_password);
+    if ($hash2 === $hash) {
+        echo "Duplicate hashes: FAIL\n";
+        $all_tests_pass = false;
+    } else {
+        echo "Duplicate hashes: pass\n";
     }
     
     // Wrong password returns false.
