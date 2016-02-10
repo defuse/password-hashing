@@ -1,28 +1,28 @@
 <?php
 
-// These constants may be changed without breaking existing hashes.
-define("PBKDF2_HASH_ALGORITHM", "sha1");
-define("PBKDF2_ITERATIONS", 64000);
-define("PBKDF2_SALT_BYTES", 24);
-define("PBKDF2_OUTPUT_BYTES", 18);
-
-// These constants define the encoding and may not be changed.
-define("HASH_SECTIONS", 5);
-define("HASH_ALGORITHM_INDEX", 0);
-define("HASH_ITERATION_INDEX", 1);
-define("HASH_SIZE_INDEX", 2);
-define("HASH_SALT_INDEX", 3);
-define("HASH_PBKDF2_INDEX", 4);
-
 class InvalidHashException extends Exception {}
 class CannotPerformOperationException extends Exception {}
 
 class PasswordStorage {
 
+    // These constants may be changed without breaking existing hashes.
+    const PBKDF2_HASH_ALGORITHM = "sha1";
+    const PBKDF2_ITERATIONS = 64000;
+    const PBKDF2_SALT_BYTES = 24;
+    const PBKDF2_OUTPUT_BYTES = 18;
+
+    // These constants define the encoding and may not be changed.
+    const HASH_SECTIONS = 5;
+    const HASH_ALGORITHM_INDEX = 0;
+    const HASH_ITERATION_INDEX = 1;
+    const HASH_SIZE_INDEX = 2;
+    const HASH_SALT_INDEX = 3;
+    const HASH_PBKDF2_INDEX = 4;
+
     public static function create_hash($password)
     {
         // format: algorithm:iterations:outputSize:salt:pbkdf2output
-        $salt_raw = mcrypt_create_iv(PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM);
+        $salt_raw = mcrypt_create_iv(self::PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM);
         if ($salt_raw === false) {
             throw new CannotPerformOperationException(
                 "Random number generator failed. Not safe to proceed."
@@ -30,21 +30,21 @@ class PasswordStorage {
         }
 
         $PBKDF2_Output = self::pbkdf2(
-            PBKDF2_HASH_ALGORITHM,
+            self::PBKDF2_HASH_ALGORITHM,
             $password,
             $salt_raw,
-            PBKDF2_ITERATIONS,
-            PBKDF2_OUTPUT_BYTES,
+            self::PBKDF2_ITERATIONS,
+            self::PBKDF2_OUTPUT_BYTES,
             true
         );
 
-        return PBKDF2_HASH_ALGORITHM . 
+        return self::PBKDF2_HASH_ALGORITHM .
             ":" .
-            PBKDF2_ITERATIONS . 
+            self::PBKDF2_ITERATIONS .
             ":" .
-            PBKDF2_OUTPUT_BYTES . 
+            self::PBKDF2_OUTPUT_BYTES .
             ":" .
-            base64_encode($salt_raw) . 
+            base64_encode($salt_raw) .
             ":" .
             base64_encode($PBKDF2_Output);
     }
@@ -52,34 +52,34 @@ class PasswordStorage {
     public static function verify_password($password, $hash)
     {
         $params = explode(":", $hash);
-        if(count($params) != HASH_SECTIONS) {
+        if(count($params) != self::HASH_SECTIONS) {
             throw new InvalidHashException(
                 "Fields are missing from the password hash."
             );
         }
 
-        $pbkdf2 = base64_decode($params[HASH_PBKDF2_INDEX], true);
+        $pbkdf2 = base64_decode($params[self::HASH_PBKDF2_INDEX], true);
         if ($pbkdf2 === false) {
             throw new InvalidHashException(
                 "Base64 decoding of pbkdf2 output failed."
             );
         }
 
-        $salt_raw = base64_decode($params[HASH_SALT_INDEX], true);
+        $salt_raw = base64_decode($params[self::HASH_SALT_INDEX], true);
         if ($salt_raw === false) {
             throw new InvalidHashException(
                 "Base64 decoding of salt failed."
             );
         }
 
-        $storedOutputSize = (int)$params[HASH_SIZE_INDEX];
+        $storedOutputSize = (int)$params[self::HASH_SIZE_INDEX];
         if (strlen($pbkdf2) !== $storedOutputSize) {
             throw new InvalidHashException(
                 "PBKDF2 output length doesn't match stored output length."
             );
         }
 
-        $iterations = (int)$params[HASH_ITERATION_INDEX];
+        $iterations = (int)$params[self::HASH_ITERATION_INDEX];
         if ($iterations < 1) {
             throw new InvalidHashException(
                 "Invalid number of iterations. Must be >= 1."
@@ -89,7 +89,7 @@ class PasswordStorage {
         return self::slow_equals(
             $pbkdf2,
             self::pbkdf2(
-                $params[HASH_ALGORITHM_INDEX],
+                $params[self::HASH_ALGORITHM_INDEX],
                 $password,
                 $salt_raw,
                 $iterations,
