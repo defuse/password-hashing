@@ -36,7 +36,7 @@ module PasswordStorage
       )
     end
 
-    pbkdf2 = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
+    pbkdf2 = pbkdf2_hmac_sha1(
       password,
       salt,
       PBKDF2_ITERATIONS,
@@ -98,7 +98,7 @@ module PasswordStorage
       )
     end
 
-    testOutput = OpenSSL::PKCS5::pbkdf2_hmac_sha1(
+    testOutput = pbkdf2_hmac_sha1(
       password,
       salt,
       iterations,
@@ -106,6 +106,24 @@ module PasswordStorage
     )
 
     return slow_equals(pbkdf2, testOutput)
+  end
+
+  def self.pbkdf2_hmac_sha1(password, salt, iterations, byte_length)
+    begin
+      return OpenSSL::PKCS5::pbkdf2_hmac_sha1(
+        password,
+        salt,
+        iterations,
+        byte_length
+      )
+    rescue OpenSSL::PKCS5::PKCS5Error
+      # According to the Ruby source code, if OpenSSL's calculation of PBKDF2
+      # fails, then it throws "ePKCS5" which I'm *guessing* is this (it's not
+      # documented explicitly).
+      raise CannotPerformOperationException.new(
+        "OpenSSL failed to compute PBKDF2."
+      )
+    end
   end
 
   def self.slow_equals(a, b)
