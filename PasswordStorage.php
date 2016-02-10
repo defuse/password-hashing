@@ -34,9 +34,9 @@ class PasswordStorage
             );
         }
         if (\function_exists('random_bytes')) {
-            $salt_raw = \random_bytes(PBKDF2_SALT_BYTES);
+            $salt_raw = \random_bytes(self::PBKDF2_SALT_BYTES);
         } else {
-            $salt_raw = \mcrypt_create_iv(PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM);
+            $salt_raw = \mcrypt_create_iv(self::PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM);
         }
         if ($salt_raw === false) {
             throw new CannotPerformOperationException(
