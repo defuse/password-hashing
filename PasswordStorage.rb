@@ -102,7 +102,7 @@ module PasswordStorage
       password,
       salt,
       iterations,
-      pbkdf2.length
+      pbkdf2.bytesize()
     )
 
     return slow_equals(pbkdf2, testOutput)
