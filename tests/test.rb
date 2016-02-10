@@ -9,7 +9,7 @@ module Test
   end
 
   def self.truncatedHashTest
-    userString = "awesomeBooks!"
+    userString = "test_password"
     hash = PasswordStorage.createHash( userString )
     badHashLength = hash.length
 
