@@ -109,12 +109,16 @@ module PasswordStorage
   end
 
   def self.slow_equals(a, b)
-    cmp = b.bytes.to_a
-    result = 0
-    a.bytes.each_with_index {|c,i|
-      result |= c ^ cmp[i]
-    }
-    result == 0
+    if a.bytesize() != b.bytesize()
+      return false
+    else
+      result = 0
+      b_bytes = b.bytes.to_a
+      a.bytes.each_with_index {|a_byte,i|
+        result |= a_byte ^ b_bytes[i]
+      }
+      return result == 0
+    end
   end
 
 end
