@@ -3,8 +3,8 @@
 class InvalidHashException extends Exception {}
 class CannotPerformOperationException extends Exception {}
 
-class PasswordStorage {
-
+class PasswordStorage
+{
     // These constants may be changed without breaking existing hashes.
     const PBKDF2_HASH_ALGORITHM = "sha1";
     const PBKDF2_ITERATIONS = 64000;
@@ -19,10 +19,31 @@ class PasswordStorage {
     const HASH_SALT_INDEX = 3;
     const HASH_PBKDF2_INDEX = 4;
 
+    /**
+     * Hash a password with PBKDF2
+     * 
+     * @param string $password
+     * @return string
+     */
     public static function create_hash($password)
     {
         // format: algorithm:iterations:outputSize:salt:pbkdf2output
-        $salt_raw = mcrypt_create_iv(self::PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM);
+        if (!\is_string($password)) {
+            throw new InvalidArgumentException(
+                "create_hash(): Expected a string"
+            );
+        }
+        if (\function_exists('random_bytes')) {
+            try {
+                $salt_raw = \random_bytes(self::PBKDF2_SALT_BYTES);
+            } catch (Error $e) {
+                $salt_raw = false;
+            } catch (Exception $e) {
+                $salt_raw = false;
+            }
+        } else {
+            $salt_raw = \mcrypt_create_iv(self::PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM);
+        }
         if ($salt_raw === false) {
             throw new CannotPerformOperationException(
                 "Random number generator failed. Not safe to proceed."
@@ -44,42 +65,54 @@ class PasswordStorage {
             ":" .
             self::PBKDF2_OUTPUT_BYTES .
             ":" .
-            base64_encode($salt_raw) .
+            \base64_encode($salt_raw) .
             ":" .
-            base64_encode($PBKDF2_Output);
+            \base64_encode($PBKDF2_Output);
     }
     
+    /**
+     * Verify that a password matches the stored hash
+     *
+     * @param string $password
+     * @param string $hash
+     * @return bool
+     */
     public static function verify_password($password, $hash)
     {
-        $params = explode(":", $hash);
-        if(count($params) != self::HASH_SECTIONS) {
+        if (!\is_string($password) || !\is_string($hash)) {
+            throw new InvalidArgumentException(
+                "verify_password(): Expected two strings"
+            );
+        }
+        $params = \explode(":", $hash);
+        if (\count($params) !== self::HASH_SECTIONS) {
             throw new InvalidHashException(
                 "Fields are missing from the password hash."
             );
         }
 
-        $pbkdf2 = base64_decode($params[self::HASH_PBKDF2_INDEX], true);
+        $pbkdf2 = \base64_decode($params[self::HASH_PBKDF2_INDEX], true);
         if ($pbkdf2 === false) {
             throw new InvalidHashException(
                 "Base64 decoding of pbkdf2 output failed."
             );
         }
 
-        $salt_raw = base64_decode($params[self::HASH_SALT_INDEX], true);
+        $salt_raw = \base64_decode($params[self::HASH_SALT_INDEX], true);
         if ($salt_raw === false) {
             throw new InvalidHashException(
                 "Base64 decoding of salt failed."
             );
         }
 
-        $storedOutputSize = (int)$params[self::HASH_SIZE_INDEX];
+        $storedOutputSize = (int) $params[self::HASH_SIZE_INDEX];
         if (self::ourStrlen($pbkdf2) !== $storedOutputSize) {
             throw new InvalidHashException(
                 "PBKDF2 output length doesn't match stored output length."
             );
         }
 
-        $iterations = (int)$params[self::HASH_ITERATION_INDEX];
+        $iterations = (int) $params[self::HASH_ITERATION_INDEX];
         if ($iterations < 1) {
             throw new InvalidHashException(
                 "Invalid number of iterations. Must be >= 1."
@@ -99,13 +132,28 @@ class PasswordStorage {
         );
     }
     
-    // Compares two strings $a and $b in length-constant time.
+    /**
+     * Compares two strings $a and $b in length-constant time.
+     * 
+     * @param string $a
+     * @param string $b
+     * @return bool
+     */
     public static function slow_equals($a, $b)
     {
+        if (!\is_string($a) || !\is_string($b)) {
+            throw new InvalidArgumentException(
+                "slow_equals(): expected two strings"
+            );
+        }
+        if (\function_exists('hash_equals')) {
+            return \hash_equals($a, $b);
+        }
+        
+        // PHP < 5.6 polyfill:
         $diff = self::ourStrlen($a) ^ self::ourStrlen($b);
-        for($i = 0; $i < self::ourStrlen($a) && $i < self::ourStrlen($b); $i++)
-        {
-            $diff |= ord($a[$i]) ^ ord($b[$i]);
+        for($i = 0; $i < self::ourStrlen($a) && $i < self::ourStrlen($b); $i++) {
+            $diff |= \ord($a[$i]) ^ \ord($b[$i]);
         }
         return $diff === 0;
     }
@@ -127,8 +175,28 @@ class PasswordStorage {
      */
     public static function pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output = false)
     {
-        $algorithm = strtolower($algorithm);
-        if(!in_array($algorithm, hash_algos(), true)) {
+        // Type checks:
+        if (!\is_string($algorithm)) {
+            throw new InvalidArgumentException(
+                "pbkdf2(): algorithm must be a string"
+            );
+        }
+        if (!\is_string($password)) {
+            throw new InvalidArgumentException(
+                "pbkdf2(): password must be a string"
+            );
+        }
+        if (!\is_string($salt)) {
+            throw new InvalidArgumentException(
+                "pbkdf2(): salt must be a string"
+            );
+        }
+        // Coerce strings to integers with no information loss or overflow
+        $count += 0;
+        $key_length += 0;
+
+        $algorithm = \strtolower($algorithm);
+        if (!\in_array($algorithm, \hash_algos(), true)) {
             throw new CannotPerformOperationException(
                 "Invalid or unsupported hash algorithm."
             );
@@ -139,38 +207,38 @@ class PasswordStorage {
             "sha1", "sha224", "sha256", "sha384", "sha512",
             "ripemd160", "ripemd256", "ripemd320", "whirlpool"
         );
-        if (!in_array($algorithm, $ok_algorithms, true)) {
+        if (!\in_array($algorithm, $ok_algorithms, true)) {
             throw new CannotPerformOperationException(
                 "Algorithm is not a secure cryptographic hash function."
             );
         }
 
-        if($count <= 0 || $key_length <= 0) {
+        if ($count <= 0 || $key_length <= 0) {
             throw new CannotPerformOperationException(
                 "Invalid PBKDF2 parameters."
             );
         }
     
-        if (function_exists("hash_pbkdf2")) {
+        if (\function_exists("hash_pbkdf2")) {
             // The output length is in NIBBLES (4-bits) if $raw_output is false!
             if (!$raw_output) {
                 $key_length = $key_length * 2;
             }
-            return hash_pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output);
+            return \hash_pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output);
         }
     
-        $hash_length = self::ourStrlen(hash($algorithm, "", true));
-        $block_count = ceil($key_length / $hash_length);
+        $hash_length = self::ourStrlen(\hash($algorithm, "", true));
+        $block_count = \ceil($key_length / $hash_length);
     
         $output = "";
         for($i = 1; $i <= $block_count; $i++) {
             // $i encoded as 4 bytes, big endian.
-            $last = $salt . pack("N", $i);
+            $last = $salt . \pack("N", $i);
             // first iteration
-            $last = $xorsum = hash_hmac($algorithm, $last, $password, true);
+            $last = $xorsum = \hash_hmac($algorithm, $last, $password, true);
             // perform the other $count - 1 iterations
             for ($j = 1; $j < $count; $j++) {
-                $xorsum ^= ($last = hash_hmac($algorithm, $last, $password, true));
+                $xorsum ^= ($last = \hash_hmac($algorithm, $last, $password, true));
             }
             $output .= $xorsum;
         }
@@ -178,7 +246,7 @@ class PasswordStorage {
         if($raw_output) {
             return self::ourSubstr($output, 0, $key_length);
         } else {
-            return bin2hex(self::ourSubstr($output, 0, $key_length));
+            return \bin2hex(self::ourSubstr($output, 0, $key_length));
         }
     }
 
@@ -188,12 +256,25 @@ class PasswordStorage {
      * substr() are replaced by mb_strlen() and mb_substr().
      */
 
+    /**
+     * Calculate the length of a string
+     * 
+     * @param string $str
+     * @return int
+     */
     private static function ourStrlen($str)
     {
         static $exists = null;
         if ($exists === null) {
             $exists = \function_exists('mb_strlen');
         }
+        
+        if (!\is_string($str)) {
+            throw new InvalidArgumentException(
+                "ourStrlen() expects a string"
+            );
+        }
+        
         if ($exists) {
             $length = \mb_strlen($str, '8bit');
             if ($length === false) {
@@ -205,14 +286,28 @@ class PasswordStorage {
         }
     }
 
+    /**
+     * Substring
+     * 
+     * @param string $str
+     * @param int $start
+     * @param int $length
+     * @return string
+     */
     private static function ourSubstr($str, $start, $length = null)
     {
         static $exists = null;
         if ($exists === null) {
             $exists = \function_exists('mb_substr');
         }
-        if ($exists)
-        {
+        // Type validation:
+        if (!\is_string($str)) {
+            throw new InvalidArgumentException(
+                "ourSubstr() expects a string"
+            );
+        }
+        
+        if ($exists) {
             // mb_substr($str, 0, NULL, '8bit') returns an empty string on PHP
             // 5.3, so we have to find the length ourselves.
             if (!isset($length)) {
@@ -233,6 +328,4 @@ class PasswordStorage {
             return \substr($str, $start);
         }
     }
-
 }
-
