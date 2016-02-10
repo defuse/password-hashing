@@ -40,6 +40,8 @@ class PasswordStorage
                 $salt_raw = false;
             } catch (Exception $e) {
                 $salt_raw = false;
+            } catch (TypeError $e) {
+                $salt_raw = false;
             }
         } else {
             $salt_raw = \mcrypt_create_iv(self::PBKDF2_SALT_BYTES, MCRYPT_DEV_URANDOM);
