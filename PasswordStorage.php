@@ -197,7 +197,7 @@ class PasswordStorage {
         if ($exists) {
             $length = \mb_strlen($str, '8bit');
             if ($length === false) {
-                throw new Ex\CannotPerformOperationException();
+                throw new CannotPerformOperationException();
             }
             return $length;
         } else {
