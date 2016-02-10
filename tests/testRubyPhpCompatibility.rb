@@ -29,8 +29,13 @@ module TestRubyAndPhpCompatiblity
     testData = `php ./tests/phpHashMaker.php`
     testData = testData.split(' ')
 
-    testPw = testData[0]
-    testHash = testData[1]
+    testPw = testData[1]
+    testHash = testData[2]
+
+    if testPw.length != testData[0].to_i
+      puts "Unicode test is invalid"
+      exit(1)
+    end
 
     if PasswordStorage.verifyPassword(testPw, testHash)
       puts "PHP hash validating in Ruby: pass"

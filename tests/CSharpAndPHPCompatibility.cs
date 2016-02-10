@@ -57,7 +57,13 @@ class CSharpAndPHPCompatibility
         // Good password.
         CommandExecResult goodHashExecution = RunCommand("php", "tests/phpHashMaker.php");
         testData = goodHashExecution.stdOut.Split(useDelimiter);
-        if (PasswordStorage.VerifyPassword(testData[0], testData[1]))
+
+        if (testData[1].Length != Int32.Parse(testData[0])) {
+            Console.WriteLine("Unicode test is invalid.");
+            System.Environment.Exit(1);
+        }
+
+        if (PasswordStorage.VerifyPassword(testData[1], testData[2]))
         {
             Console.WriteLine("PHP hash validating in C#: pass");
         }
@@ -70,7 +76,13 @@ class CSharpAndPHPCompatibility
         // Bad password.
         CommandExecResult badHashExecution = RunCommand("php", "tests/phpHashMaker.php");
         testData = badHashExecution.stdOut.Split(useDelimiter);
-        if (PasswordStorage.VerifyPassword("wrongPassword", testData[1]))
+
+        if (testData[1].Length != Int32.Parse(testData[0])) {
+            Console.WriteLine("Unicode test is invalid.");
+            System.Environment.Exit(1);
+        }
+
+        if (PasswordStorage.VerifyPassword("wrongPassword", testData[2]))
         {
             Console.WriteLine("The C# implementation accepts BAD PHP hashes: FAIL");
             System.Environment.Exit(1);

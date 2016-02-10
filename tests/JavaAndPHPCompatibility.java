@@ -153,8 +153,14 @@ public class JavaAndPHPCompatibility {
 
         String[] testData = s.split(" ");
         PasswordHashPair pair = new PasswordHashPair();
-        pair.password = testData[0];
-        pair.hash = testData[1];
+        pair.password = testData[1];
+        pair.hash = testData[2];
+
+        if (testData[1].length() != Integer.parseInt(testData[0])) {
+            System.out.println("Unicode test is invalid.");
+            System.exit(1);
+        }
+
         return pair;
     }
 }
