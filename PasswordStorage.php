@@ -6,6 +6,7 @@ define("PBKDF2_ITERATIONS", 64000);
 define("PBKDF2_SALT_BYTES", 24);
 define("PBKDF2_OUTPUT_BYTES", 18);
 
+// These constants define the encoding and may not be changed.
 define("HASH_SECTIONS", 5);
 define("HASH_ALGORITHM_INDEX", 0);
 define("HASH_ITERATION_INDEX", 1);
