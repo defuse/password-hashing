@@ -130,6 +130,8 @@ function test()
     // Make sure changing the algorithm breaks the hash.
     $hash = PasswordStorage::create_hash("foobar");
     $hash = str_replace("sha1:", "sha256:", $hash);
+    // Here we don't expect an exception, since PHP does support SHA256, we
+    // just expect it to return false as though the password was wrong.
     if (PasswordStorage::verify_password("foobar", $hash) === FALSE) {
         echo "Algorithm swap: pass\n";
     } else {
