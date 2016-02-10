@@ -72,6 +72,17 @@ function test()
         echo "Correct password: FAIL\n";
         $all_tests_pass = false;
     }
+    
+    
+    
+    // Make sure we reject invalid types.
+    try {
+        $bad = PasswordStorage::create_hash(array('test', 'lol', 'fail'));
+        echo "Reject create_hash arrays: FAIL\n";
+        $all_tests_pass = false;
+    } catch (Exception $ex) {
+        echo "Reject create_hash arrays: PASS\n";
+    }
 
     // Wrong password returns false.
     $result = PasswordStorage::verify_password("wrong_password", $hash);
@@ -136,5 +147,15 @@ function test()
         echo "Algorithm swap: FAIL\n";
         $all_tests_pass = false;
     }
+    
+    // Make sure we reject invalid types.
+    try {
+        PasswordStorage::verify_password(array('test', 'lol', 'fail'), $hash);
+        echo "Reject verify_password arrays: FAIL\n";
+        $all_tests_pass = false;
+    } catch (Exception $ex) {
+        echo "Reject verify_password arrays: PASS\n";
+    }
+    
     return $all_tests_pass;
 }
