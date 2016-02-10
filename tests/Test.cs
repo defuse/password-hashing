@@ -14,7 +14,7 @@ class Test
     // Make sure truncated hashes don't validate.
     private static void truncatedHashTest()
     {
-        string userString = "C# is cray cray!";
+        string userString = "test_password";
         string goodHash = PasswordStorage.CreateHash(userString);
         string badHash = "";
 
