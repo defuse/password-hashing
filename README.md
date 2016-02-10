@@ -32,63 +32,94 @@ but using libsodium would be better.
 Usage
 ------
 
-This library provides two methods: `CreateHash`, and `ValidatePassword`. The
-`CreateHash` method takes a password as input and returns a "hash" string that
-can be used to check if a password matches the one that was given to
-`CreateHash`. The `ValidatePassword` method takes a hash string and a candidate
-password, and returns true if the candidate password is the same as the one that
-was originally given to `CreateHash`.
+You should not store users' passwords in plain text on your servers. Nor should
+you even store them in encrypted form. The correct way to store a password is to
+store something created from the password, which we'll call a "hash." Hashes
+don't allow you to recover the password, they only let you check if a password
+is the same as the one that created the hash.
 
-The library takes care of salting internally, so the user of this library does
-not need to manually add salt or worry about storing the salt. The salt is
-encoded into the hash string.
+There are a lot of subtle details about password hashing that this library hides
+from you. You don't need to worry about things like "salt" with this library. It
+takes care of all of that for you.
 
-The different implementations are compatibile with each other. So a hash
-produced with one implementation can later be used to verify the password in
-a different one.
+To implement a user login system, you need two parts: creating new accounts, and
+logging in to existing accounts. When you create a new account, your code will
+create a hash of the new account's password and save it somewhere. When you log
+in to an account, your code will use the hash to check if the login password is
+correct.
 
-### Creating a Hash
+To create a hash, when a new account is added to your system, you call the
+`CreateHash()` method provided by this library. To verify a password, you call
+`VerifyPassword()` method provided by this library.
 
-When a user account is created, store their username and their password's
-hash string into the database:
+Here is more specific documentation for both functions. The behavior should be
+the same for all of the implementations (although the method names differ
+slightly). If one implementation behaves differently than another, that is
+a bug, and should be filed in the GitHub issue tracker.
 
-    User Registers for Account (username, password):
-        Ensure username does not already exist in the database.
-        hash = CreateHash(password)
-        If CreateHash threw an exception, stop and alert a human.
-        Store (username, hash) in the database.
+### CreateHash(password)
 
-### Validating a Password
+**Preconditions:**
 
-When a user attempts to log in, retrieve the password hash from the database
-and use it to check if the password is correct:
+- You're intending to create a new account, or the password to an existing
+  account is being changed.
+- `password` is the password for the new account, or the new password for an
+  existing account.
 
-    User Attempts to Log in (username, password):
-        Look up (username, hash) in the database.
-        If no record is found for the given username, return false.
-        If ValidatePassword(password, hash) is true:
-            The password is correct. Return true.
-        Otherwise, if it is false:
-            The password is wrong. Return false.
-        Otherwise, if it threw an exception:
-            Stop and alert a human.
+**Postconditions:**
 
-### Exception Handling
+- `CreateHash()` gives you a string which can be used with `VerifyPassword()` to
+  check, in the future, if a password is the same as the `password` given to
+  this call.
 
-Both `CreateHash` and `ValidatePassword` can throw the following exceptions. If
-your code is secure, it will always catch these exceptions and deal with them.
-If either of these exceptions are thrown, it is usually indicative of something
-being *seriously* wrong, so a human should be alerted whenever they are.
+**Obligations:**
 
-- `InvalidHashException`: The password hash was corrupted or changed
-  between when it was returned by `CreateHash` and passed to `ValidatePassword`.
-  If this happens, it could mean your database is configured incorrectly, or the
-  code that inserts and retrieves from the database is wrong.
+- Store the string `CreateHash()` returns to you in a safe place. If an attacker
+  can modify your hashes, they will be able to change them to, for instance, the
+  hash of "1234", and then log in to any account. If an attacker can view your
+  hashes, they can begin cracking them (by trying to guess-and-check passwords).
 
-- `CannotPerformOperationException`: This happens when the operation you asked
-  for could not be performed securely. For example, if the random number
-  generator fails when generating a salt, this exception will be thrown. Another
-  example is when the hash algorithm is not supported by the system.
+**Exceptions:**
+
+- `CannotPerformOperationException`: If this exception is thrown, it means
+  something is wrong with the platform your code is running on, and it's not
+  safe to create a hash. For example, if your system's random number generator
+  doesn't work properly, this kind of exception will be thrown.
+
+### VerifyPassword(password, correctHash)
+
+**Preconditions:**
+
+- Someone is logging in to a user account which has been created in the past.
+- `password` is the password provided by the person trying to log in.
+- `correctHash` is the hash of the account's correct password, made with
+  `CreateHash()` when the account was created or when its password was last
+  changed. Make sure you are providing the hash for the correct user account!
+- `correctHash` hasn't been seen by or changed by an attacker since it was
+  created.
+
+**Postconditions:**
+
+- True is returned if the password provided by the person logging in is correct.
+  False is returned if not.
+
+**Obligations:**
+
+- Make sure the `correctHash` you're giving is for the right account. If you
+  give a hash for the wrong account, it would let someone log into Alice's
+  account using Bob's password!
+
+**Exceptions:**
+
+- `CannotPerformOperationException`: If this exception is thrown, it means
+  something is wrong with the platform your code is running on, and for some
+  reason it's not safe to verify a password on it.
+- `InvalidHashException`: The `correctHash` you gave was somehow corrupted. Note
+  that some ways of corrupting a hash are impossible to detect, and their only
+  symptom will be that `VerifyPassword()` will return false even though the
+  correct password was given. So `InvalidHashException` is not guaranteed to be
+  thrown if a hash has been changed, but *if it is thrown* then you can be sure
+  that the hash was changed.
 
 Customization
 --------------
