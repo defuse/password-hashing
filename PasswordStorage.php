@@ -73,7 +73,7 @@ class PasswordStorage {
         }
 
         $storedOutputSize = (int)$params[self::HASH_SIZE_INDEX];
-        if (strlen($pbkdf2) !== $storedOutputSize) {
+        if (self::ourStrlen($pbkdf2) !== $storedOutputSize) {
             throw new InvalidHashException(
                 "PBKDF2 output length doesn't match stored output length."
             );
@@ -93,7 +93,7 @@ class PasswordStorage {
                 $password,
                 $salt_raw,
                 $iterations,
-                strlen($pbkdf2),
+                self::ourStrlen($pbkdf2),
                 true
             )
         );
@@ -102,8 +102,8 @@ class PasswordStorage {
     // Compares two strings $a and $b in length-constant time.
     public static function slow_equals($a, $b)
     {
-        $diff = strlen($a) ^ strlen($b);
-        for($i = 0; $i < strlen($a) && $i < strlen($b); $i++)
+        $diff = self::ourStrlen($a) ^ self::ourStrlen($b);
+        for($i = 0; $i < self::ourStrlen($a) && $i < self::ourStrlen($b); $i++)
         {
             $diff |= ord($a[$i]) ^ ord($b[$i]);
         }
@@ -159,7 +159,7 @@ class PasswordStorage {
             return hash_pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output);
         }
     
-        $hash_length = strlen(hash($algorithm, "", true));
+        $hash_length = self::ourStrlen(hash($algorithm, "", true));
         $block_count = ceil($key_length / $hash_length);
     
         $output = "";
@@ -176,9 +176,61 @@ class PasswordStorage {
         }
     
         if($raw_output) {
-            return substr($output, 0, $key_length);
+            return self::ourSubstr($output, 0, $key_length);
         } else {
-            return bin2hex(substr($output, 0, $key_length));
+            return bin2hex(self::ourSubstr($output, 0, $key_length));
+        }
+    }
+
+    /*
+     * We need these strlen() and substr() functions because when
+     * 'mbstring.func_overload' is set in php.ini, the standard strlen() and
+     * substr() are replaced by mb_strlen() and mb_substr().
+     */
+
+    private static function ourStrlen($str)
+    {
+        static $exists = null;
+        if ($exists === null) {
+            $exists = \function_exists('mb_strlen');
+        }
+        if ($exists) {
+            $length = \mb_strlen($str, '8bit');
+            if ($length === false) {
+                throw new Ex\CannotPerformOperationException();
+            }
+            return $length;
+        } else {
+            return \strlen($str);
+        }
+    }
+
+    private static function ourSubstr($str, $start, $length = null)
+    {
+        static $exists = null;
+        if ($exists === null) {
+            $exists = \function_exists('mb_substr');
+        }
+        if ($exists)
+        {
+            // mb_substr($str, 0, NULL, '8bit') returns an empty string on PHP
+            // 5.3, so we have to find the length ourselves.
+            if (!isset($length)) {
+                if ($start >= 0) {
+                    $length = self::ourStrlen($str) - $start;
+                } else {
+                    $length = -$start;
+                }
+            }
+
+            return \mb_substr($str, $start, $length, '8bit');
+        }
+
+        // Unlike mb_substr(), substr() doesn't accept NULL for length
+        if (isset($length)) {
+            return \substr($str, $start, $length);
+        } else {
+            return \substr($str, $start);
         }
     }
 
