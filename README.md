@@ -4,7 +4,7 @@ Secure Password Storage v2.0
 [![Build Status](https://travis-ci.org/defuse/password-hashing.svg?branch=master)](https://travis-ci.org/defuse/password-hashing)
 
 This repository containes peer-reviewed libraries for password storage in PHP,
-C#, Ruby, and Java. Passwords are "hashed" with PBKDF2 (32,000 iterations of
+C#, Ruby, and Java. Passwords are "hashed" with PBKDF2 (64,000 iterations of
 SHA1 by default) using a cryptographically-random salt. The implementations are
 compatible with each other, so you can, for instance, create a hash in PHP and
 then verify it in C#.
