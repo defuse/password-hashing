@@ -1,0 +1,32 @@
+{
+  "name": "secure-password-storage",
+  "version": "2.0.0",
+  "description": "This repository contains peer-reviewed libraries for password storage in PHP, C#, Ruby, Java, and Node.js. Passwords are \"hashed\" with PBKDF2 (64,000 iterations of SHA1 by default) using a cryptographically-random salt. The implementations are compatible with each other, so you can, for instance, create a hash in PHP and then verify it in C#.",
+  "main": "PasswordStorage.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node tests/Test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/defuse/password-hashing.git"
+  },
+  "keywords": [
+    "password",
+    "hash",
+    "secure",
+    "random",
+    "salt"
+  ],
+  "contributors": [
+    "Taylor Hornby <havoc@defuse.ca> (https://github.com/defuse)",
+    "Ben Green <ben@latenightsketches.com> (https://github.com/numtel)"
+  ],
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/defuse/password-hashing/issues"
+  },
+  "homepage": "https://github.com/defuse/password-hashing#readme"
+}

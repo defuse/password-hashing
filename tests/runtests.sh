@@ -64,6 +64,21 @@ cd ..
 echo "---------------------------------------------"
 echo ""
 
+echo "Node.js"
+echo "---------------------------------------------"
+
+. $HOME/.nvm/nvm.sh
+nvm install v4.3.2
+nvm use v4.3.2
+npm test
+if [ $? -ne 0 ]; then
+    echo "FAIL."
+    exit 1
+fi
+
+echo "---------------------------------------------"
+echo ""
+
 echo "PHP<->Ruby Compatibility"
 echo "---------------------------------------------"
 ruby tests/testRubyPhpCompatibility.rb
