@@ -76,6 +76,14 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+nvm install v6.1.0
+nvm use v6.1.0
+npm test
+if [ $? -ne 0 ]; then
+    echo "FAIL."
+    exit 1
+fi
+
 echo "---------------------------------------------"
 echo ""
 
