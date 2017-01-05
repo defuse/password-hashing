@@ -7,7 +7,6 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
 
-
 public class PasswordStorage {
 
     private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmac";
@@ -38,17 +37,17 @@ public class PasswordStorage {
          * - ... SALT , ... ,SALT_SIZE
          * <p>
          * ALGORITHM: 基础哈希算法 固定长度 6位，不足以 空格 填充
-         *             Basic hash algorithm fixed length of 6, not enough to fill the space
+         * Basic hash algorithm fixed length of 6, not enough to fill the space
          * ITERATIONS: 迭代重复次数 固定长度 6位，不足以 前导0 填充
-         *             iterationCount fixed length of 6, not enough to fill the 0
+         * iterationCount fixed length of 6, not enough to fill the 0
          * HASH_SIZE: 计算hash后的字符串长度 固定长度3位，不足以 前导0 填充
-         *            The length of hashed String fixed length of 3, not enough to fill the 0
+         * The length of hashed String fixed length of 3, not enough to fill the 0
          * PBKDF2: hash值转存的字符串 不定长
-         *         A indefinite length hashed String 
+         * A indefinite length hashed String
          * SALT_SIZE:  随机盐值 转存字符串的长度 固定长度3位，不足以 前导0 填充
-         *             The length of random salt String fixed length of 3, not enough to fill the 0
+         * The length of random salt String fixed length of 3, not enough to fill the 0
          * SALT: 随机盐值 的字符串 不定长
-         *       A indefinite length random salt String 
+         * A indefinite length random salt String
          */
         private enum HashItem {
             ALGORITHM(6), ITERATIONS(6), HASH_SIZE(3), PBKDF2(0), SALT_SIZE(3), SALT(0);
@@ -97,7 +96,7 @@ public class PasswordStorage {
                         builder.delete(0, colLength);
                         break;
                     case PBKDF2:
-                        if (hashStrLength < 0) {
+                        if (hashStrLength < 0 || hashStrLength >= builder.length()) {
                             throw new IllegalArgumentException("Fields are missing from the password hash.length");
                         }
                         hashStr = builder.substring(0, hashStrLength);
@@ -109,7 +108,7 @@ public class PasswordStorage {
                         builder.delete(0, colLength);
                         break;
                     case SALT:
-                        if (saltStrLength < 0) {
+                        if (saltStrLength < 0 || saltStrLength >= builder.length()) {
                             throw new IllegalArgumentException("Base64 decoding of salt.length failed.");
                         }
                         saltStr = builder.substring(0, saltStrLength);
@@ -205,15 +204,20 @@ public class PasswordStorage {
     }
 
     public static boolean verifyPassword(char[] password, String correctHash) {
-        // Decode the hash into its parameters
-        Hash hash = new Hash(correctHash);
+        try {
+            // Decode the hash into its parameters
+            Hash hash = new Hash(correctHash);
 
-        // Compute the hash of the provided password, using the same salt,
-        // iteration count, and hash length
-        byte[] testHash = pbkdf2(hash.getHashAlgorithm(), password, hash.getSalt(), hash.pbkdf2Iterations, hash.getHash().length);
-        // Compare the hashes in constant time. The password is correct if
-        // both hashes match.
-        return slowEquals(hash.getHash(), testHash);
+            // Compute the hash of the provided password, using the same salt,
+            // iteration count, and hash length
+            byte[] testHash = pbkdf2(hash.getHashAlgorithm(), password, hash.getSalt(), hash.pbkdf2Iterations, hash.getHash().length);
+            // Compare the hashes in constant time. The password is correct if
+            // both hashes match.
+            return slowEquals(hash.getHash(), testHash);
+        } catch (RuntimeException ignored) {
+            // modify the "HASH_SEQUENCE" or "HashItem.length" can throw this exception
+        }
+        return false;
     }
 
     private static boolean slowEquals(byte[] a, byte[] b) {
