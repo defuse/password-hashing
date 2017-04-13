@@ -1,202 +1,241 @@
 
-import java.security.SecureRandom;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.SecretKeyFactory;
-import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
+import javax.crypto.spec.PBEKeySpec;
 import javax.xml.bind.DatatypeConverter;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 
-public class PasswordStorage
-{
 
-    @SuppressWarnings("serial")
-    static public class InvalidHashException extends Exception {
-        public InvalidHashException(String message) {
-            super(message);
-        }
-        public InvalidHashException(String message, Throwable source) {
-            super(message, source);
-        }
-    }
+public class PasswordStorage {
 
-    @SuppressWarnings("serial")
-    static public class CannotPerformOperationException extends Exception {
-        public CannotPerformOperationException(String message) {
-            super(message);
-        }
-        public CannotPerformOperationException(String message, Throwable source) {
-            super(message, source);
-        }
-    }
-
-    public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
+    private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmac";
+    private static final String HASH_ALGORITHM = "sha512";
 
     // These constants may be changed without breaking existing hashes.
-    public static final int SALT_BYTE_SIZE = 24;
-    public static final int HASH_BYTE_SIZE = 18;
-    public static final int PBKDF2_ITERATIONS = 64000;
+    private static final int SALT_BYTE_SIZE = 18;
+    private static final int HASH_BYTE_SIZE = 20;
+    private static final int PBKDF2_ITERATIONS = 13000;
 
-    // These constants define the encoding and may not be changed.
-    public static final int HASH_SECTIONS = 5;
-    public static final int HASH_ALGORITHM_INDEX = 0;
-    public static final int ITERATION_INDEX = 1;
-    public static final int HASH_SIZE_INDEX = 2;
-    public static final int SALT_INDEX = 3;
-    public static final int PBKDF2_INDEX = 4;
+    private static class Hash {
+        /**
+         * 设置结果字符串的拼接顺序, 并去掉 ":" 分隔符 使字符串更难被解读
+         * 你可以在项目已经发布运行之后的开发维护中修改除"HASH_SEQUENCE"和"HashItem.length" 以外的其他生成规则,
+         * 代码依旧可以兼容验证过去生成的数据.
+         * Set the sequence of the resulting string and remove the ":" to make it harder to interpret the string
+         * You can modify the development rules other than "HASH_SEQUENCE" and "HashItem.length" after the project has been run.
+         * The code can still be compatible with the data generated in the past
+         * <p>
+         * 注意: 不定长部分的长度字段必须要在 对应的不定长字段前
+         * Note: the length field of an indefinite length must be before the corresponding indefinite length field
+         * Right:
+         * - ALGORITHM, ITERATIONS, HASH_SIZE, PBKDF2, SALT_SIZE, SALT
+         * - SALT_SIZE, HASH_SIZE, PBKDF2,  SALT ,ALGORITHM ,ITERATIONS,
+         * - ...
+         * Wrong:
+         * - ... PBKDF2,HASH_SIZE ...
+         * - ... SALT , ... ,SALT_SIZE
+         * <p>
+         * ALGORITHM: 基础哈希算法 固定长度 6位，不足以 空格 填充
+         * Basic hash algorithm fixed length of 6, not enough to fill the space
+         * ITERATIONS: 迭代重复次数 固定长度 6位，不足以 前导0 填充
+         * iterationCount fixed length of 6, not enough to fill the 0
+         * HASH_SIZE: 计算hash后的字符串长度 固定长度3位，不足以 前导0 填充
+         * The length of hashed String fixed length of 3, not enough to fill the 0
+         * PBKDF2: hash值转存的字符串 不定长
+         * A indefinite length hashed String
+         * SALT_SIZE:  随机盐值 转存字符串的长度 固定长度3位，不足以 前导0 填充
+         * The length of random salt String fixed length of 3, not enough to fill the 0
+         * SALT: 随机盐值 的字符串 不定长
+         * A indefinite length random salt String
+         */
+        private enum HashItem {
+            ALGORITHM(6), ITERATIONS(6), HASH_SIZE(3), PBKDF2(0), SALT_SIZE(3), SALT(0);
 
-    public static String createHash(String password)
-        throws CannotPerformOperationException
-    {
+            private int length;
+
+            HashItem(int length) {
+                this.length = length;
+            }
+        }
+
+        // normal
+        private static final HashItem[] HASH_SEQUENCE = {HashItem.ALGORITHM, HashItem.ITERATIONS, HashItem.HASH_SIZE, HashItem.PBKDF2, HashItem.SALT_SIZE, HashItem.SALT};
+        // unordered
+        // private static final HashItem[] HASH_SEQUENCE = {HashItem.SALT_SIZE, HashItem.ITERATIONS, HashItem.HASH_SIZE, HashItem.SALT, HashItem.ALGORITHM, HashItem.PBKDF2};
+        // unordered + redundancy
+        // private static final HashItem[] HASH_SEQUENCE = {HashItem.HASH_SIZE, HashItem.SALT_SIZE, HashItem.ITERATIONS, HashItem.PBKDF2, HashItem.SALT, HashItem.ALGORITHM, HashItem.PBKDF2};
+
+        private String hashAlgorithm;
+        private int pbkdf2Iterations;
+        private byte[] hash;
+        private String hashStr;
+        private byte[] salt;
+        private String saltStr;
+
+        Hash() {
+        }
+
+        Hash(String correctHash) {
+            StringBuilder builder = new StringBuilder(correctHash);
+            int hashStrLength = -1;
+            int saltStrLength = -1;
+            for (HashItem hashItem : HASH_SEQUENCE) {
+                int colLength = hashItem.length;
+                switch (hashItem) {
+                    case ALGORITHM:
+                        hashAlgorithm = builder.substring(0, colLength).trim();
+                        builder.delete(0, colLength);
+                        break;
+                    case ITERATIONS:
+                        pbkdf2Iterations = Integer.parseInt(builder.substring(0, colLength));
+                        builder.delete(0, colLength);
+                        break;
+                    case HASH_SIZE:
+                        hashStrLength = Integer.parseInt(builder.substring(0, colLength));
+                        builder.delete(0, colLength);
+                        break;
+                    case PBKDF2:
+                        if (hashStrLength < 0 || hashStrLength >= builder.length()) {
+                            throw new IllegalArgumentException("Fields are missing from the password hash.length");
+                        }
+                        hashStr = builder.substring(0, hashStrLength);
+                        hash = DatatypeConverter.parseBase64Binary(hashStr);
+                        builder.delete(0, hashStrLength);
+                        break;
+                    case SALT_SIZE:
+                        saltStrLength = Integer.parseInt(builder.substring(0, colLength));
+                        builder.delete(0, colLength);
+                        break;
+                    case SALT:
+                        if (saltStrLength < 0 || saltStrLength >= builder.length()) {
+                            throw new IllegalArgumentException("Base64 decoding of salt.length failed.");
+                        }
+                        saltStr = builder.substring(0, saltStrLength);
+                        salt = DatatypeConverter.parseBase64Binary(saltStr);
+                        builder.delete(0, saltStrLength);
+                        break;
+                }
+            }
+        }
+
+        public String getHashAlgorithm() {
+            return hashAlgorithm;
+        }
+
+        public void setHashAlgorithm(String hashAlgorithm) {
+            this.hashAlgorithm = hashAlgorithm;
+        }
+
+        public void setPbkdf2Iterations(int pbkdf2Iterations) {
+            this.pbkdf2Iterations = pbkdf2Iterations;
+        }
+
+        public byte[] getHash() {
+            return hash;
+        }
+
+        public void setHash(byte[] hash) {
+            this.hash = hash;
+            this.hashStr = DatatypeConverter.printBase64Binary(hash);
+        }
+
+        public byte[] getSalt() {
+            return salt;
+        }
+
+        public void setSalt(byte[] salt) {
+            this.salt = salt;
+            this.saltStr = DatatypeConverter.printBase64Binary(salt);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            for (HashItem hashItem : HASH_SEQUENCE) {
+                switch (hashItem) {
+                    case ALGORITHM:
+                        builder.append(String.format("%" + hashItem.length + "s", hashAlgorithm));
+                        break;
+                    case ITERATIONS:
+                        builder.append(String.format("%0" + hashItem.length + "d", pbkdf2Iterations));
+                        break;
+                    case HASH_SIZE:
+                        builder.append(String.format("%0" + hashItem.length + "d", hashStr.length()));
+                        break;
+                    case PBKDF2:
+                        builder.append(hashStr);
+                        break;
+                    case SALT_SIZE:
+                        builder.append(String.format("%0" + hashItem.length + "d", saltStr.length()));
+                        break;
+                    case SALT:
+                        builder.append(saltStr);
+                        break;
+                }
+            }
+            return builder.toString();
+        }
+    }
+
+    public static String createHash(String password) {
         return createHash(password.toCharArray());
     }
 
-    public static String createHash(char[] password)
-        throws CannotPerformOperationException
-    {
+    public static String createHash(char[] password) {
         // Generate a random salt
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[SALT_BYTE_SIZE];
         random.nextBytes(salt);
 
         // Hash the password
-        byte[] hash = pbkdf2(password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
-        int hashSize = hash.length;
+        byte[] hash = pbkdf2(HASH_ALGORITHM, password, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE);
 
-        // format: algorithm:iterations:hashSize:salt:hash
-        String parts = "sha1:" +
-            PBKDF2_ITERATIONS +
-            ":" + hashSize +
-            ":" +
-            toBase64(salt) +
-            ":" +
-            toBase64(hash);
-        return parts;
+        Hash hashObj = new Hash();
+        hashObj.setHashAlgorithm(HASH_ALGORITHM);
+        hashObj.setPbkdf2Iterations(PBKDF2_ITERATIONS);
+        hashObj.setHash(hash);
+        hashObj.setSalt(salt);
+        return hashObj.toString();
     }
 
-    public static boolean verifyPassword(String password, String correctHash)
-        throws CannotPerformOperationException, InvalidHashException
-    {
+    public static boolean verifyPassword(String password, String correctHash) {
         return verifyPassword(password.toCharArray(), correctHash);
     }
 
-    public static boolean verifyPassword(char[] password, String correctHash)
-        throws CannotPerformOperationException, InvalidHashException
-    {
-        // Decode the hash into its parameters
-        String[] params = correctHash.split(":");
-        if (params.length != HASH_SECTIONS) {
-            throw new InvalidHashException(
-                "Fields are missing from the password hash."
-            );
-        }
-
-        // Currently, Java only supports SHA1.
-        if (!params[HASH_ALGORITHM_INDEX].equals("sha1")) {
-            throw new CannotPerformOperationException(
-                "Unsupported hash type."
-            );
-        }
-
-        int iterations = 0;
+    public static boolean verifyPassword(char[] password, String correctHash) {
         try {
-            iterations = Integer.parseInt(params[ITERATION_INDEX]);
-        } catch (NumberFormatException ex) {
-            throw new InvalidHashException(
-                "Could not parse the iteration count as an integer.",
-                ex
-            );
+            // Decode the hash into its parameters
+            Hash hash = new Hash(correctHash);
+
+            // Compute the hash of the provided password, using the same salt,
+            // iteration count, and hash length
+            byte[] testHash = pbkdf2(hash.getHashAlgorithm(), password, hash.getSalt(), hash.pbkdf2Iterations, hash.getHash().length);
+            // Compare the hashes in constant time. The password is correct if
+            // both hashes match.
+            return slowEquals(hash.getHash(), testHash);
+        } catch (RuntimeException ignored) {
+            // modify the "HASH_SEQUENCE" or "HashItem.length" can throw this exception
         }
-
-        if (iterations < 1) {
-            throw new InvalidHashException(
-                "Invalid number of iterations. Must be >= 1."
-            );
-        }
-
-
-        byte[] salt = null;
-        try {
-            salt = fromBase64(params[SALT_INDEX]);
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidHashException(
-                "Base64 decoding of salt failed.",
-                ex
-            );
-        }
-
-        byte[] hash = null;
-        try {
-            hash = fromBase64(params[PBKDF2_INDEX]);
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidHashException(
-                "Base64 decoding of pbkdf2 output failed.",
-                ex
-            );
-        }
-
-
-        int storedHashSize = 0;
-        try {
-            storedHashSize = Integer.parseInt(params[HASH_SIZE_INDEX]);
-        } catch (NumberFormatException ex) {
-            throw new InvalidHashException(
-                "Could not parse the hash size as an integer.",
-                ex
-            );
-        }
-
-        if (storedHashSize != hash.length) {
-            throw new InvalidHashException(
-                "Hash length doesn't match stored hash length."
-            );
-        }
-
-        // Compute the hash of the provided password, using the same salt, 
-        // iteration count, and hash length
-        byte[] testHash = pbkdf2(password, salt, iterations, hash.length);
-        // Compare the hashes in constant time. The password is correct if
-        // both hashes match.
-        return slowEquals(hash, testHash);
+        return false;
     }
 
-    private static boolean slowEquals(byte[] a, byte[] b)
-    {
+    private static boolean slowEquals(byte[] a, byte[] b) {
         int diff = a.length ^ b.length;
-        for(int i = 0; i < a.length && i < b.length; i++)
+        for (int i = 0; i < a.length && i < b.length; i++)
             diff |= a[i] ^ b[i];
         return diff == 0;
     }
 
-    private static byte[] pbkdf2(char[] password, byte[] salt, int iterations, int bytes)
-        throws CannotPerformOperationException
-    {
+    private static byte[] pbkdf2(String HashAlgorithm, char[] password, byte[] salt, int iterations, int bytes) {
+        PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, bytes * 8);
         try {
-            PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, bytes * 8);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM + HashAlgorithm);
             return skf.generateSecret(spec).getEncoded();
-        } catch (NoSuchAlgorithmException ex) {
-            throw new CannotPerformOperationException(
-                "Hash algorithm not supported.",
-                ex
-            );
-        } catch (InvalidKeySpecException ex) {
-            throw new CannotPerformOperationException(
-                "Invalid key spec.",
-                ex
-            );
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException("Hash algorithm not supported.", e);
+        } catch (InvalidKeySpecException e) {
+            throw new IllegalArgumentException("Invalid key spec.", e);
         }
     }
-
-    private static byte[] fromBase64(String hex)
-        throws IllegalArgumentException
-    {
-        return DatatypeConverter.parseBase64Binary(hex);
-    }
-
-    private static String toBase64(byte[] array)
-    {
-        return DatatypeConverter.printBase64Binary(array);
-    }
-
 }
