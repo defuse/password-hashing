@@ -190,12 +190,12 @@ public class PasswordStorage
     private static byte[] fromBase64(String hex)
         throws IllegalArgumentException
     {
-         return Base64.getDecoder().decode(hex);     
+        return Base64.getDecoder().decode(hex);
     }
 
     private static String toBase64(byte[] array)
     {
-         return Base64.getEncoder().encodeToString(array);
+        return Base64.getEncoder().encodeToString(array);
     }
 
 }
