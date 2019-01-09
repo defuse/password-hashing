@@ -23,7 +23,11 @@ using a memory hard algorithm, your passwords will be better protected.
 One thing you could do would be to use
 [libsodium](https://github.com/jedisct1/libsodium) to [hash your passwords with
 scrypt](https://download.libsodium.org/doc/password_hashing/index.html). It has
-bindings available for many languages.
+bindings available for many languages. For PHP apps, a great option is to use the
+built-in
+[`password_hash()`](https://secure.php.net/manual/en/function.password-hash.php)
+and
+[`password_verify()`](https://secure.php.net/manual/en/function.password-verify.php) functions.
 
 Since there are better options, this code is now in "maintenance mode." Only
 bugs will be fixed, no new features will be added. It is currently safe to use,
