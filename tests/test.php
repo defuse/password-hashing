@@ -65,7 +65,7 @@ function test()
 
     // Right password returns true.
     $result = PasswordStorage::verify_password($correct_password, $hash);
-    if ($result === TRUE)
+    if ($result === true)
     {
         echo "Correct password: pass\n";
     }
@@ -86,7 +86,7 @@ function test()
     
     // Wrong password returns false.
     $result = PasswordStorage::verify_password("wrong_password", $hash);
-    if ($result === FALSE)
+    if ($result === false)
     {
         echo "Wrong password: pass\n";
     }
@@ -143,7 +143,7 @@ function test()
     $hash = str_replace("sha1:", "sha256:", $hash);
     // Here we don't expect an exception, since PHP does support SHA256, we
     // just expect it to return false as though the password was wrong.
-    if (PasswordStorage::verify_password("foobar", $hash) === FALSE) {
+    if (PasswordStorage::verify_password("foobar", $hash) === false) {
         echo "Algorithm swap: pass\n";
     } else {
         echo "Algorithm swap: FAIL\n";
